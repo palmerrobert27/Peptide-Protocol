@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Transformation Program</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Outfit:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e0dbd0;
+    --ink: #1a1814;
+    --ink2: #4a4540;
+    --muted: #9a9088;
+    --accent: #c8392b;
+    --accent2: #2b5c8a;
+    --gold: #b8902a;
+    --green: #2a6b4a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+
+  /* HERO */
+  .hero { padding: 64px 48px 56px; background: var(--ink); color: var(--bg); position: relative; overflow: hidden; }
+  .hero::after { content: 'RECOMPOSITION'; position: absolute; right: -20px; bottom: -40px; font-family: 'Cormorant Garamond', serif; font-size: 160px; font-weight: 300; color: rgba(247,245,240,0.04); white-space: nowrap; pointer-events: none; letter-spacing: -4px; }
+  .hero-eyebrow { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; opacity:0; animation: rise 0.7s ease forwards; }
+  .hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(52px, 8vw, 96px); font-weight: 300; line-height: 1; letter-spacing: -1px; color: var(--bg); opacity:0; animation: rise 0.7s ease 0.1s forwards; }
+  .hero h1 em { font-style: italic; color: #d4b483; }
+  .hero-stats { display: flex; gap: 48px; margin-top: 40px; flex-wrap: wrap; opacity:0; animation: rise 0.7s ease 0.2s forwards; }
+  .stat { display: flex; flex-direction: column; gap: 5px; }
+  .stat-label { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: rgba(247,245,240,0.4); }
+  .stat-val { font-size: 15px; font-weight: 500; color: var(--bg); }
+  @keyframes rise { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  /* APPROACH */
+  .approach { display: grid; grid-template-columns: 160px 1fr; gap: 32px; align-items: start; padding: 40px 48px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .approach-tag { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); padding-top: 4px; }
+  .approach-body { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; line-height: 1.65; color: var(--ink2); }
+  .approach-body strong { color: var(--ink); font-weight: 600; }
+
+  /* WEEK NAV */
+  .week-nav { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-bottom: 2px solid var(--ink); }
+  .day-btn { padding: 24px 20px; border: none; background: none; cursor: pointer; text-align: left; border-right: 1px solid var(--border); transition: background 0.18s; position: relative; }
+  .day-btn:last-child { border-right: none; }
+  .day-btn:hover { background: var(--surface2); }
+  .day-btn.active { background: var(--ink); color: var(--bg); }
+  .day-btn.active .db-day { color: var(--bg); }
+  .day-btn.active .db-focus { color: rgba(247,245,240,0.7); }
+  .day-btn.active .db-num { color: rgba(247,245,240,0.3); }
+  .db-num { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+  .db-day { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; line-height: 1; color: var(--ink); margin-bottom: 6px; }
+  .db-focus { font-size: 12px; font-weight: 500; color: var(--ink2); margin-bottom: 10px; line-height: 1.3; }
+  .db-pill { display: inline-block; font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; }
+  .day-btn.active .db-pill { background: rgba(247,245,240,0.1); color: rgba(247,245,240,0.6); }
+  .pill-chest { background: rgba(200,57,43,0.1); color: var(--accent); }
+  .pill-back  { background: rgba(43,92,138,0.1); color: var(--accent2); }
+  .pill-legs  { background: rgba(42,107,74,0.1); color: var(--green); }
+  .pill-push  { background: rgba(184,144,42,0.1); color: var(--gold); }
+  .pill-full  { background: rgba(43,92,138,0.1); color: var(--accent2); }
+
+  /* DAY PANEL */
+  .day-panel { display: none; }
+  .day-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  .panel-header { padding: 40px 48px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+  .panel-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; line-height: 1; letter-spacing: -0.5px; }
+  .panel-header h2 span { color: var(--accent); font-style: italic; }
+  .panel-desc { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 520px; margin-top: 10px; }
+  .time-badges { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 6px; }
+  .time-badge { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--border); color: var(--ink2); border-radius: 2px; white-space: nowrap; }
+
+  /* SECTIONS */
+  .section { padding: 32px 48px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+  .section-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .section-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .icon-warmup  { background: rgba(184,144,42,0.12); }
+  .icon-main    { background: rgba(200,57,43,0.1); }
+  .icon-abs     { background: rgba(42,107,74,0.1); }
+  .icon-cardio  { background: rgba(43,92,138,0.1); }
+  .icon-stretch { background: rgba(154,144,136,0.15); }
+  .section-title { font-family: 'Courier Prime', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+  .section-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* MOBILITY GRID */
+  .mobility-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .mob-card { padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; }
+  .mob-name { font-size: 13px; font-weight: 500; }
+  .mob-detail { font-family: 'Courier Prime', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* EXERCISE TABLE */
+  .ex-table { width: 100%; border-collapse: collapse; }
+  .ex-table thead tr { border-bottom: 2px solid var(--ink); }
+  .ex-table th { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); padding: 0 16px 12px 0; text-align: left; white-space: nowrap; }
+  .ex-table th:first-child { padding-left: 0; }
+  .ex-table td { padding: 16px 16px 16px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .ex-table td:first-child { padding-left: 0; }
+  .ex-table tr:last-child td { border-bottom: none; }
+  .ex-name { font-size: 15px; font-weight: 500; color: var(--ink); }
+  .ex-cue  { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; font-style: italic; }
+  .ex-sets { font-family: 'Courier Prime', monospace; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .ex-rest { font-family: 'Courier Prime', monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .ex-tag { display: inline-block; font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 1px; padding: 2px 7px; border-radius: 2px; white-space: nowrap; text-transform: uppercase; }
+  .tag-heavy   { background: rgba(200,57,43,0.1);  color: var(--accent); }
+  .tag-pump    { background: rgba(43,92,138,0.1);  color: var(--accent2); }
+  .tag-stretch { background: rgba(42,107,74,0.1);  color: var(--green); }
+  .tag-super   { background: rgba(184,144,42,0.12); color: var(--gold); }
+
+  /* ABS GRID */
+  .abs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .abs-card { padding: 18px 20px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--green); border-radius: 0 3px 3px 0; }
+  .abs-name { font-size: 14px; font-weight: 500; }
+  .abs-detail { font-family: 'Courier Prime', monospace; font-size: 12px; color: var(--accent); margin-top: 4px; font-weight: 700; }
+  .abs-cue { font-size: 12px; color: var(--muted); margin-top: 4px; font-style: italic; }
+
+  /* CARDIO */
+  .cardio-card { background: var(--ink); color: var(--bg); padding: 28px 32px; border-radius: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+  .cardio-machine { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; line-height: 1; }
+  .cardio-machine span { color: #d4b483; font-style: italic; }
+  .cardio-protocol { font-size: 13px; color: rgba(247,245,240,0.7); line-height: 1.7; }
+  .cardio-protocol strong { color: var(--bg); }
+
+  /* STRETCH */
+  .stretch-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .stretch-item { padding: 14px 16px; background: var(--surface2); border-radius: 3px; border: 1px solid var(--border); }
+  .stretch-name { font-size: 13px; font-weight: 500; }
+  .stretch-detail { font-family: 'Courier Prime', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* PROGRESSION */
+  .progression { background: var(--ink); color: var(--bg); padding: 48px; }
+  .progression h3 { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; letter-spacing: -0.5px; margin-bottom: 32px; }
+  .prog-phases { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .phase-card { padding: 22px; border: 1px solid rgba(247,245,240,0.1); border-radius: 3px; }
+  .phase-label { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: #d4b483; margin-bottom: 10px; }
+  .phase-card p { font-size: 13px; color: rgba(247,245,240,0.65); line-height: 1.65; }
+
+  /* KEY NOTES */
+  .key-notes { padding: 48px; background: var(--surface); display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; border-top: 1px solid var(--border); }
+  .note { padding: 22px; border: 1px solid var(--border); border-radius: 3px; }
+  .note-head { margin-bottom: 10px; }
+  .note-head span { font-family: 'Courier Prime', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+  .note p { font-size: 13px; color: var(--ink2); line-height: 1.7; }
+
+  @media (max-width: 768px) {
+    .hero, .approach, .section, .progression, .key-notes { padding-left: 20px; padding-right: 20px; }
+    .panel-header { padding: 28px 20px 0; }
+    .week-nav { grid-template-columns: repeat(3, 1fr); }
+    .week-nav .day-btn:nth-child(4), .week-nav .day-btn:nth-child(5) { border-top: 1px solid var(--border); }
+    .approach { grid-template-columns: 1fr; gap: 8px; }
+    .cardio-card { grid-template-columns: 1fr; }
+    .ex-table th:nth-child(3), .ex-table td:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Advanced Transformation Protocol · 12 Weeks</div>
+  <h1>Shape &amp; <em>Condition</em></h1>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-label">Schedule</span><span class="stat-val">Sun · Mon · Wed · Fri · Sat</span></div>
+    <div class="stat"><span class="stat-label">Session</span><span class="stat-val">~2 Hours</span></div>
+    <div class="stat"><span class="stat-label">Focus</span><span class="stat-val">Chest · Abs · Cardio · Flexibility</span></div>
+    <div class="stat"><span class="stat-label">Goal</span><span class="stat-val">Fat Loss + Muscle Retention</span></div>
+  </div>
+</div>
+
+<div class="approach">
+  <div class="approach-tag">Philosophy</div>
+  <div class="approach-body">Classic bodybuilding structure with a <strong>dedicated ab block every session</strong> and cardio matched to your equipment. Chest gets extra volume twice a week. Mobility is built into every warmup and cooldown. The goal is a body that looks as good as it performs.</div>
+</div>
+
+<div class="week-nav">
+  <button class="day-btn active" onclick="showDay(0)">
+    <div class="db-num">01</div><div class="db-day">Sunday</div><div class="db-focus">Chest + Triceps</div><div class="db-pill pill-chest">Push</div>
+  </button>
+  <button class="day-btn" onclick="showDay(1)">
+    <div class="db-num">02</div><div class="db-day">Monday</div><div class="db-focus">Back + Biceps</div><div class="db-pill pill-back">Pull</div>
+  </button>
+  <button class="day-btn" onclick="showDay(2)">
+    <div class="db-num">03</div><div class="db-day">Wednesday</div><div class="db-focus">Shoulders + Arms</div><div class="db-pill pill-push">Upper</div>
+  </button>
+  <button class="day-btn" onclick="showDay(3)">
+    <div class="db-num">04</div><div class="db-day">Friday</div><div class="db-focus">Legs + Glutes</div><div class="db-pill pill-legs">Lower</div>
+  </button>
+  <button class="day-btn" onclick="showDay(4)">
+    <div class="db-num">05</div><div class="db-day">Saturday</div><div class="db-focus">Chest + Back Power</div><div class="db-pill pill-full">Full Upper</div>
+  </button>
+</div>
+
+<!-- ═══════ DAY 1 — SUNDAY — CHEST + TRICEPS ═══════ -->
+<div class="day-panel active" id="day-0">
+  <div class="panel-header">
+    <div>
+      <h2>Chest <span>&amp; Triceps</span></h2>
+      <p class="panel-desc">Primary chest day. Heavy pressing, cable isolation, and full pec stretch. Triceps trained to failure. Abs and incline treadmill cardio close the session.</p>
+    </div>
+    <div class="time-badges">
+      <div class="time-badge">🔥 Warmup 10 min</div>
+      <div class="time-badge">💪 Lifting 70 min</div>
+      <div class="time-badge">🎯 Abs 15 min</div>
+      <div class="time-badge">🏃 Cardio 20 min</div>
+      <div class="time-badge">🧘 Stretch 5 min</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-warmup">🔥</div><div><div class="section-title">Dynamic Warmup + Mobility — 10 min</div><div class="section-sub">2 rounds · Open chest, shoulders, and thoracic spine before pressing</div></div></div>
+    <div class="mobility-grid">
+      <div class="mob-card"><div class="mob-name">Arm Circles</div><div class="mob-detail">20 forward / 20 back</div></div>
+      <div class="mob-card"><div class="mob-name">Chest Opener Stretch</div><div class="mob-detail">Hold 30 sec × 2</div></div>
+      <div class="mob-card"><div class="mob-name">Band Pull-Apart</div><div class="mob-detail">25 reps</div></div>
+      <div class="mob-card"><div class="mob-name">Cat-Cow</div><div class="mob-detail">10 slow reps</div></div>
+      <div class="mob-card"><div class="mob-name">Incline Push-Up (slow)</div><div class="mob-detail">15 reps · 3 sec eccentric</div></div>
+      <div class="mob-card"><div class="mob-name">Thoracic Rotation</div><div class="mob-detail">10 reps each side</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-main">💪</div><div><div class="section-title">Chest + Triceps — 70 min</div><div class="section-sub">Superset pairs [SS] alternate with 60 sec between exercises</div></div></div>
+    <table class="ex-table">
+      <thead><tr><th>Exercise</th><th>Sets × Reps</th><th>Rest</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><div class="ex-name">Barbell Flat Bench Press</div><div class="ex-cue">Work to a heavy top set (4 reps), then drop 15% for volume. Full ROM — touch chest every rep.</div></td><td class="ex-sets">1×4 top<br>3×8 back-off</td><td class="ex-rest">2–3 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">Incline Dumbbell Press</div><div class="ex-cue">2-sec pause at bottom. Full stretch, explosive press. Your 110s — use them. Lower slowly.</div></td><td class="ex-sets">4×8</td><td class="ex-rest">2 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Cable Fly — Low to High</div><div class="ex-cue">Superset with incline press. Full pec stretch at extension. Squeeze hard at peak.</div></td><td class="ex-sets">4×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">Pec Deck / Machine Fly</div><div class="ex-cue">3-sec eccentric. Final set: drop weight 30% and go to failure immediately.</div></td><td class="ex-sets">4×12 + drop</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">Weighted Chest Dip</div><div class="ex-cue">Lean forward, slight elbow flare. Add 45+ lbs. Full depth, no half reps.</div></td><td class="ex-sets">3×10</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Tricep Rope Pushdown</div><div class="ex-cue">Superset with dips. Flare rope at bottom. Full lockout every rep.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">Overhead Cable Tricep Extension</div><div class="ex-cue">Long head emphasis. Elbows locked in. Stretch fully overhead — don't shorten the range.</div></td><td class="ex-sets">3×12</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-abs">🎯</div><div><div class="section-title">Ab Block — 15 min</div><div class="section-sub">3 rounds · 45 sec rest between rounds only · Upper, lower, oblique</div></div></div>
+    <div class="abs-grid">
+      <div class="abs-card"><div class="abs-name">Cable Crunch</div><div class="abs-detail">4×15 — weighted</div><div class="abs-cue">Round your spine into the movement. This is the #1 abs builder — progress the weight like a lift.</div></div>
+      <div class="abs-card"><div class="abs-name">Hanging Leg Raise</div><div class="abs-detail">3×15</div><div class="abs-cue">Dead stop at bottom. No swinging. Tuck the pelvis at the top.</div></div>
+      <div class="abs-card"><div class="abs-name">Cable Oblique Crunch</div><div class="abs-detail">3×15 each side</div><div class="abs-cue">Side bend only. Hips square throughout.</div></div>
+      <div class="abs-card"><div class="abs-name">Plank</div><div class="abs-detail">3×60 sec</div><div class="abs-cue">Squeeze glutes, push floor away. No sagging hips.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-cardio">🏃</div><div><div class="section-title">Cardio — 20 min</div></div></div>
+    <div class="cardio-card">
+      <div><div class="cardio-machine">Incline <span>Treadmill</span></div></div>
+      <div class="cardio-protocol"><strong>Steady-state fat burn.</strong> Incline 8–12%. Walk 3.0–3.5 mph. Heart rate 120–135 bpm. Incline walking maximizes fat oxidation post-lifting without a cortisol spike — this preserves your muscle while burning fat.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-stretch">🧘</div><div><div class="section-title">Cooldown Stretch — 5 min</div><div class="section-sub">Hold each 30–45 sec · Breathe into the tension · Don't rush</div></div></div>
+    <div class="stretch-row">
+      <div class="stretch-item"><div class="stretch-name">Cross-Body Shoulder Stretch</div><div class="stretch-detail">45 sec each arm</div></div>
+      <div class="stretch-item"><div class="stretch-name">Doorway Chest Stretch</div><div class="stretch-detail">45 sec</div></div>
+      <div class="stretch-item"><div class="stretch-name">Overhead Tricep Stretch</div><div class="stretch-detail">30 sec each arm</div></div>
+      <div class="stretch-item"><div class="stretch-name">Child's Pose</div><div class="stretch-detail">60 sec</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DAY 2 — MONDAY — BACK + BICEPS ═══════ -->
+<div class="day-panel" id="day-1">
+  <div class="panel-header">
+    <div>
+      <h2>Back <span>&amp; Biceps</span></h2>
+      <p class="panel-desc">Width and thickness. Weighted pull-ups anchor the session. Rows, cables, and a full bicep superset follow. Posture muscles trained hard — your physique is built from the back.</p>
+    </div>
+    <div class="time-badges">
+      <div class="time-badge">🔥 Warmup 10 min</div>
+      <div class="time-badge">💪 Lifting 65 min</div>
+      <div class="time-badge">🎯 Abs 15 min</div>
+      <div class="time-badge">🏃 Cardio 20 min</div>
+      <div class="time-badge">🧘 Stretch 5 min</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-warmup">🔥</div><div><div class="section-title">Dynamic Warmup + Mobility — 10 min</div><div class="section-sub">Open lats, shoulders, and thoracic spine</div></div></div>
+    <div class="mobility-grid">
+      <div class="mob-card"><div class="mob-name">Dead Hang</div><div class="mob-detail">3×30 sec — decompress spine</div></div>
+      <div class="mob-card"><div class="mob-name">Scapular Pull-Up</div><div class="mob-detail">3×10 — no elbow bend</div></div>
+      <div class="mob-card"><div class="mob-name">Lat Stretch (bar)</div><div class="mob-detail">30 sec each side</div></div>
+      <div class="mob-card"><div class="mob-name">Cat-Cow</div><div class="mob-detail">10 slow reps</div></div>
+      <div class="mob-card"><div class="mob-name">Face Pull (light)</div><div class="mob-detail">3×20 — rotator cuff</div></div>
+      <div class="mob-card"><div class="mob-name">Hip Flexor Stretch</div><div class="mob-detail">60 sec each side</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-main">💪</div><div><div class="section-title">Back + Biceps — 65 min</div></div></div>
+    <table class="ex-table">
+      <thead><tr><th>Exercise</th><th>Sets × Reps</th><th>Rest</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><div class="ex-name">Weighted Pull-Up</div><div class="ex-cue">Add 45–90 lbs. Dead hang at bottom, chin clears bar. This is your primary back strength movement.</div></td><td class="ex-sets">5×5</td><td class="ex-rest">2–3 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">Barbell Bent-Over Row</div><div class="ex-cue">45° torso. Pull to lower ribs. Squeeze scapula at the top. Heavy and controlled.</div></td><td class="ex-sets">4×8</td><td class="ex-rest">2 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">Seated Cable Row — Close Grip</div><div class="ex-cue">Full stretch forward, elbows drive back past torso. Pause 1 sec at peak contraction.</div></td><td class="ex-sets">4×12</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">Single-Arm Dumbbell Row</div><div class="ex-cue">Heavy. Let the shoulder blade fully rotate — don't pin it down. Full ROM.</div></td><td class="ex-sets">4×12 each</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">Straight-Arm Pulldown (cable)</div><div class="ex-cue">Arms straight throughout. Feel the lat stretch at the top. Pure isolation.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-stretch">Stretch</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Barbell Curl</div><div class="ex-cue">Superset with hammer curl. Full extension at bottom every rep.</div></td><td class="ex-sets">3×12</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Hammer Curl</div><div class="ex-cue">Neutral grip. Brachialis and forearm. Controlled eccentric.</div></td><td class="ex-sets">3×12</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-abs">🎯</div><div><div class="section-title">Ab Block — 15 min</div><div class="section-sub">Lower abs and oblique emphasis today</div></div></div>
+    <div class="abs-grid">
+      <div class="abs-card"><div class="abs-name">Reverse Crunch</div><div class="abs-detail">4×20</div><div class="abs-cue">Drive lower back into the bench at the top. Pure lower ab movement.</div></div>
+      <div class="abs-card"><div class="abs-name">Ab Wheel Rollout</div><div class="abs-detail">4×12</div><div class="abs-cue">Full extension. Brace like you're about to take a punch.</div></div>
+      <div class="abs-card"><div class="abs-name">Weighted Russian Twist</div><div class="abs-detail">3×20 each side</div><div class="abs-cue">Feet elevated. Plate or DB. Rotate from obliques, not your arms.</div></div>
+      <div class="abs-card"><div class="abs-name">Flat Bench Leg Raise</div><div class="abs-detail">3×20</div><div class="abs-cue">Lower slowly — 3 sec eccentric. Don't let lower back arch off the bench.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-cardio">🏃</div><div><div class="section-title">Cardio — 20 min</div></div></div>
+    <div class="cardio-card">
+      <div><div class="cardio-machine">Rowing <span>Machine</span></div></div>
+      <div class="cardio-protocol"><strong>Interval protocol.</strong> 5 min easy warmup. Then 8 rounds: 40 sec hard (rate 26–28) / 50 sec easy. 3 min easy cooldown. Rowing hits lats and biceps — your muscles will feel the connection after a back day.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-stretch">🧘</div><div><div class="section-title">Cooldown Stretch — 5 min</div></div></div>
+    <div class="stretch-row">
+      <div class="stretch-item"><div class="stretch-name">Lat Overhead Stretch</div><div class="stretch-detail">45 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Pigeon Pose</div><div class="stretch-detail">60 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Bicep Wall Stretch</div><div class="stretch-detail">30 sec each arm</div></div>
+      <div class="stretch-item"><div class="stretch-name">Seated Forward Fold</div><div class="stretch-detail">60 sec</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DAY 3 — WEDNESDAY — SHOULDERS + ARMS ═══════ -->
+<div class="day-panel" id="day-2">
+  <div class="panel-header">
+    <div>
+      <h2>Shoulders <span>&amp; Arms</span></h2>
+      <p class="panel-desc">Full shoulder development and dedicated arm volume. Moderate weights, high tension, and a full pump. Cardio goes longer today — midweek is the right time for it.</p>
+    </div>
+    <div class="time-badges">
+      <div class="time-badge">🔥 Warmup 10 min</div>
+      <div class="time-badge">💪 Lifting 65 min</div>
+      <div class="time-badge">🎯 Abs 15 min</div>
+      <div class="time-badge">🏃 Cardio 25 min</div>
+      <div class="time-badge">🧘 Stretch 5 min</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-warmup">🔥</div><div><div class="section-title">Dynamic Warmup + Mobility — 10 min</div><div class="section-sub">Shoulder health first — never skip on pressing days</div></div></div>
+    <div class="mobility-grid">
+      <div class="mob-card"><div class="mob-name">Neck Rolls</div><div class="mob-detail">10 slow circles each direction</div></div>
+      <div class="mob-card"><div class="mob-name">Shoulder CARs</div><div class="mob-detail">8 full circles each arm</div></div>
+      <div class="mob-card"><div class="mob-name">Face Pull (light band)</div><div class="mob-detail">3×20 — external rotation</div></div>
+      <div class="mob-card"><div class="mob-name">World's Greatest Stretch</div><div class="mob-detail">5 reps each side</div></div>
+      <div class="mob-card"><div class="mob-name">Side-Lying Thoracic Rotation</div><div class="mob-detail">10 reps each side</div></div>
+      <div class="mob-card"><div class="mob-name">Hip 90/90</div><div class="mob-detail">60 sec each side</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-main">💪</div><div><div class="section-title">Shoulders + Arms — 65 min</div></div></div>
+    <table class="ex-table">
+      <thead><tr><th>Exercise</th><th>Sets × Reps</th><th>Rest</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><div class="ex-name">Seated DB Shoulder Press</div><div class="ex-cue">Heavy. No back arch. 2-sec eccentric. Work to a top set.</div></td><td class="ex-sets">4×8</td><td class="ex-rest">2 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Lateral Raise</div><div class="ex-cue">Superset with front raise. Light-moderate weight. Lead with elbow, slight forward lean.</div></td><td class="ex-sets">4×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Plate Front Raise</div><div class="ex-cue">Palms down. Raise to eye level. Lower slowly.</div></td><td class="ex-sets">4×12</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">Rear Delt Fly (cable or machine)</div><div class="ex-cue">Bent-over position. Squeeze rear delts — don't let traps take over.</div></td><td class="ex-sets">4×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">EZ Bar Curl</div><div class="ex-cue">Full extension at bottom. Supinate at top. No swinging — ever.</div></td><td class="ex-sets">4×10</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">Incline Dumbbell Curl</div><div class="ex-cue">Full stretch on the long head of bicep. Slow eccentric. One of the best bicep movements.</div></td><td class="ex-sets">3×12</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-stretch">Stretch</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Skull Crusher (EZ bar)</div><div class="ex-cue">Superset with close-grip bench. Lower to forehead — full long head stretch.</div></td><td class="ex-sets">4×12</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Close-Grip Bench Press</div><div class="ex-cue">Elbows tucked tight. Tricep focus. Controlled down, explosive up.</div></td><td class="ex-sets">4×10</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-abs">🎯</div><div><div class="section-title">Ab Block — 15 min</div><div class="section-sub">Rotation and oblique focus — the muscles that create waist definition</div></div></div>
+    <div class="abs-grid">
+      <div class="abs-card"><div class="abs-name">Cable Wood Chop</div><div class="abs-detail">4×12 each side</div><div class="abs-cue">High-to-low. Rotate from core, not arms. Full range of motion.</div></div>
+      <div class="abs-card"><div class="abs-name">Weighted Decline Sit-Up</div><div class="abs-detail">4×20</div><div class="abs-cue">Hold plate at chest. 3-sec eccentric. No neck pulling.</div></div>
+      <div class="abs-card"><div class="abs-name">Side Plank</div><div class="abs-detail">3×45 sec each side</div><div class="abs-cue">Stack feet, drive hip up. Add a dip for extra oblique work.</div></div>
+      <div class="abs-card"><div class="abs-name">Slow Bicycle Crunch</div><div class="abs-detail">3×30</div><div class="abs-cue">Slow and controlled — not fast. Rotate fully each rep.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-cardio">🏃</div><div><div class="section-title">Cardio — 25 min</div></div></div>
+    <div class="cardio-card">
+      <div><div class="cardio-machine">Stair<span>master</span></div></div>
+      <div class="cardio-protocol"><strong>Steady-state — extended session.</strong> Level 8–12 for 25 minutes. Hands off the rails the entire time. Heart rate 130–145 bpm. Midweek is the right day for longer steady-state — your legs are fresh and your upper body gets a cardiovascular flush.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-stretch">🧘</div><div><div class="section-title">Cooldown Stretch — 5 min</div></div></div>
+    <div class="stretch-row">
+      <div class="stretch-item"><div class="stretch-name">Overhead Shoulder Stretch</div><div class="stretch-detail">45 sec each arm</div></div>
+      <div class="stretch-item"><div class="stretch-name">Sleeper Stretch</div><div class="stretch-detail">45 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Doorway Pec Stretch</div><div class="stretch-detail">45 sec</div></div>
+      <div class="stretch-item"><div class="stretch-name">Standing Quad Stretch</div><div class="stretch-detail">45 sec each side</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DAY 4 — FRIDAY — LEGS + GLUTES ═══════ -->
+<div class="day-panel" id="day-3">
+  <div class="panel-header">
+    <div>
+      <h2>Legs <span>&amp; Glutes</span></h2>
+      <p class="panel-desc">Heavy squats, unilateral work, hamstrings, and calves. Larger muscle groups mean bigger calorie burn. Cardio is high intensity today — assault bike post-legs will be brutal. That's the point.</p>
+    </div>
+    <div class="time-badges">
+      <div class="time-badge">🔥 Warmup 12 min</div>
+      <div class="time-badge">💪 Lifting 70 min</div>
+      <div class="time-badge">🎯 Abs 10 min</div>
+      <div class="time-badge">🏃 Cardio 20 min</div>
+      <div class="time-badge">🧘 Stretch 8 min</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-warmup">🔥</div><div><div class="section-title">Dynamic Warmup + Mobility — 12 min</div><div class="section-sub">Hip and ankle mobility are non-negotiable before heavy squats</div></div></div>
+    <div class="mobility-grid">
+      <div class="mob-card"><div class="mob-name">Hip 90/90 Stretch</div><div class="mob-detail">90 sec each side</div></div>
+      <div class="mob-card"><div class="mob-name">Banded Clamshells</div><div class="mob-detail">2×20 each side</div></div>
+      <div class="mob-card"><div class="mob-name">Ankle Circles</div><div class="mob-detail">20 each direction per ankle</div></div>
+      <div class="mob-card"><div class="mob-name">Goblet Squat (light)</div><div class="mob-detail">2×15 — hold at bottom 3 sec</div></div>
+      <div class="mob-card"><div class="mob-name">Walking Lunge (bodyweight)</div><div class="mob-detail">20 steps</div></div>
+      <div class="mob-card"><div class="mob-name">Pigeon Pose</div><div class="mob-detail">60 sec each side</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-main">💪</div><div><div class="section-title">Legs + Glutes — 70 min</div></div></div>
+    <table class="ex-table">
+      <thead><tr><th>Exercise</th><th>Sets × Reps</th><th>Rest</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><div class="ex-name">Back Squat</div><div class="ex-cue">Work to a heavy triple, then 3 back-off sets. Full depth. This is the foundational movement.</div></td><td class="ex-sets">1×3 top<br>3×6 back-off</td><td class="ex-rest">3 min</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">Romanian Deadlift</div><div class="ex-cue">3-sec eccentric. Full hamstring stretch. Bar stays close to the body throughout.</div></td><td class="ex-sets">4×10</td><td class="ex-rest">2 min</td><td><span class="ex-tag tag-stretch">Stretch</span></td></tr>
+        <tr><td><div class="ex-name">Bulgarian Split Squat (DB)</div><div class="ex-cue">Rear foot elevated. Front foot far enough for vertical shin. Heavy dumbbells.</div></td><td class="ex-sets">4×10 each</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-heavy">Heavy</span></td></tr>
+        <tr><td><div class="ex-name">Leg Press — High Wide Stance</div><div class="ex-cue">Glute emphasis. Full depth without lower back rounding. Drop set on last set.</div></td><td class="ex-sets">4×15</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Leg Extension</div><div class="ex-cue">Superset with leg curl. Squeeze quad at peak. 3-sec eccentric.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Lying Leg Curl</div><div class="ex-cue">Full hamstring contraction. Don't let hips come off the pad.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">Standing Calf Raise</div><div class="ex-cue">Full stretch at bottom. Peak squeeze at top. 3-sec eccentric. Heavy.</div></td><td class="ex-sets">5×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-abs">🎯</div><div><div class="section-title">Ab Block — 10 min</div><div class="section-sub">Shorter today — legs took the primary energy. Still hit it.</div></div></div>
+    <div class="abs-grid">
+      <div class="abs-card"><div class="abs-name">Toes to Bar</div><div class="abs-detail">4×12</div><div class="abs-cue">Controlled, no kipping. Slow lower back to dead hang.</div></div>
+      <div class="abs-card"><div class="abs-name">Cable Crunch</div><div class="abs-detail">3×20 — weighted</div><div class="abs-cue">Kneeling. Round spine into the movement. Hold 1 sec at the bottom.</div></div>
+      <div class="abs-card"><div class="abs-name">Plank to Shoulder Tap</div><div class="abs-detail">3×20 each side</div><div class="abs-cue">Hips square throughout. Move slowly. Anti-rotation core work.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-cardio">🏃</div><div><div class="section-title">Cardio — 20 min</div></div></div>
+    <div class="cardio-card">
+      <div><div class="cardio-machine">Assault <span>Bike</span></div></div>
+      <div class="cardio-protocol"><strong>HIIT protocol.</strong> 3 min easy warmup. Then 10 rounds: 30 sec all-out / 60 sec easy. 2 min cooldown. Maximum fat burn in minimum time. Post-legs on the assault bike is as hard as it gets — and that's exactly why it works.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-stretch">🧘</div><div><div class="section-title">Cooldown Stretch — 8 min (extended)</div><div class="section-sub">Legs need more time. Don't cut this short.</div></div></div>
+    <div class="stretch-row">
+      <div class="stretch-item"><div class="stretch-name">Pigeon Pose</div><div class="stretch-detail">90 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Standing Hamstring Stretch</div><div class="stretch-detail">60 sec each leg</div></div>
+      <div class="stretch-item"><div class="stretch-name">Hip Flexor Lunge Stretch</div><div class="stretch-detail">60 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Seated Calf Stretch</div><div class="stretch-detail">45 sec each</div></div>
+      <div class="stretch-item"><div class="stretch-name">Supine Figure-4</div><div class="stretch-detail">60 sec each side</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DAY 5 — SATURDAY — CHEST + BACK POWER ═══════ -->
+<div class="day-panel" id="day-4">
+  <div class="panel-header">
+    <div>
+      <h2>Chest + Back <span>Power</span></h2>
+      <p class="panel-desc">Chest gets its second dose of volume this week. Back gets heavy pulling. Antagonist supersets — pressing and pulling alternate — keep rest short and intensity high. End the week strong.</p>
+    </div>
+    <div class="time-badges">
+      <div class="time-badge">🔥 Warmup 10 min</div>
+      <div class="time-badge">💪 Lifting 70 min</div>
+      <div class="time-badge">🎯 Abs 15 min</div>
+      <div class="time-badge">🏃 Cardio 20 min</div>
+      <div class="time-badge">🧘 Stretch 5 min</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-warmup">🔥</div><div><div class="section-title">Dynamic Warmup + Mobility — 10 min</div><div class="section-sub">Full upper body prep — you're pressing and pulling today</div></div></div>
+    <div class="mobility-grid">
+      <div class="mob-card"><div class="mob-name">Arm Swing Crossovers</div><div class="mob-detail">2×20</div></div>
+      <div class="mob-card"><div class="mob-name">Dead Hang</div><div class="mob-detail">2×30 sec</div></div>
+      <div class="mob-card"><div class="mob-name">Band Pull-Apart</div><div class="mob-detail">3×20</div></div>
+      <div class="mob-card"><div class="mob-name">Foam Roll T-Spine</div><div class="mob-detail">60 sec — thoracic extension</div></div>
+      <div class="mob-card"><div class="mob-name">Scapular Push-Up</div><div class="mob-detail">2×15</div></div>
+      <div class="mob-card"><div class="mob-name">Wrist Circles</div><div class="mob-detail">10 each direction</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-main">💪</div><div><div class="section-title">Chest + Back Antagonist Supersets — 70 min</div><div class="section-sub">Every [SS] pair alternates push/pull — chest pumps while back recovers and vice versa</div></div></div>
+    <table class="ex-table">
+      <thead><tr><th>Exercise</th><th>Sets × Reps</th><th>Rest</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><div class="ex-name">[SS] Flat Dumbbell Press</div><div class="ex-cue">Heavy. Full stretch at bottom, forceful press. Antagonist pair with weighted pull-up.</div></td><td class="ex-sets">5×8</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Weighted Pull-Up</div><div class="ex-cue">Add 45–90 lbs. Back rests while chest presses — and vice versa. Full ROM.</div></td><td class="ex-sets">5×6</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] Incline Dumbbell Press</div><div class="ex-cue">Upper chest — second dose this week. Controlled descent, full stretch.</div></td><td class="ex-sets">4×10</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">[SS] T-Bar Row</div><div class="ex-cue">Mid-back thickness. Chest to pad, elbows drive back. Heavy.</div></td><td class="ex-sets">4×10</td><td class="ex-rest">90 sec</td><td><span class="ex-tag tag-super">Superset</span></td></tr>
+        <tr><td><div class="ex-name">Cable Crossover — High to Low</div><div class="ex-cue">Lower chest isolation. Full stretch at top, squeeze hard at center.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-stretch">Stretch</span></td></tr>
+        <tr><td><div class="ex-name">Chest-Supported Machine Row</div><div class="ex-cue">Takes lower back out of the equation. Pure upper back. Squeeze and hold 1 sec.</div></td><td class="ex-sets">3×15</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+        <tr><td><div class="ex-name">Push-Up to Failure</div><div class="ex-cue">Bodyweight chest finisher. Full ROM. 3 sets. Go until you physically cannot.</div></td><td class="ex-sets">3×max</td><td class="ex-rest">60 sec</td><td><span class="ex-tag tag-pump">Pump</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-abs">🎯</div><div><div class="section-title">Ab Block — 15 min</div><div class="section-sub">End the week with your best ab session — full upper, lower, and oblique</div></div></div>
+    <div class="abs-grid">
+      <div class="abs-card"><div class="abs-name">Cable Crunch</div><div class="abs-detail">4×20 — heavy</div><div class="abs-cue">Most important weighted ab exercise for definition. Progress this like any other lift.</div></div>
+      <div class="abs-card"><div class="abs-name">Hanging Leg Raise</div><div class="abs-detail">4×15</div><div class="abs-cue">Add ankle weights once bodyweight feels manageable.</div></div>
+      <div class="abs-card"><div class="abs-name">Decline Russian Twist</div><div class="abs-detail">3×20 each side</div><div class="abs-cue">Weighted plate. Slow and deliberate rotation each rep.</div></div>
+      <div class="abs-card"><div class="abs-name">Plank</div><div class="abs-detail">3×60–90 sec</div><div class="abs-cue">Maximum brace. Push duration week over week.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-cardio">🏃</div><div><div class="section-title">Cardio — 20 min</div></div></div>
+    <div class="cardio-card">
+      <div><div class="cardio-machine">Incline <span>Treadmill</span></div></div>
+      <div class="cardio-protocol"><strong>Steady-state close out.</strong> Incline 10–15%. Walk 3.0–3.5 mph. 20 minutes. End the week with a slow burn — upper body is taxed, so steady walking maximizes fat oxidation without stressing recovery before Sunday's session.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-icon icon-stretch">🧘</div><div><div class="section-title">Cooldown Stretch — 5 min</div></div></div>
+    <div class="stretch-row">
+      <div class="stretch-item"><div class="stretch-name">Doorway Chest Stretch</div><div class="stretch-detail">45 sec</div></div>
+      <div class="stretch-item"><div class="stretch-name">Lat Overhead Stretch</div><div class="stretch-detail">45 sec each side</div></div>
+      <div class="stretch-item"><div class="stretch-name">Child's Pose</div><div class="stretch-detail">90 sec</div></div>
+      <div class="stretch-item"><div class="stretch-name">Supine Spinal Twist</div><div class="stretch-detail">60 sec each side</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESSION -->
+<div class="progression">
+  <h3>12-Week Progression Model</h3>
+  <div class="prog-phases">
+    <div class="phase-card"><div class="phase-label">Weeks 1–3 · Foundation</div><p>Learn the movements. Log every weight. Aim for RPE targets. Cardio at the lower end of prescribed intensities. Build the base.</p></div>
+    <div class="phase-card"><div class="phase-label">Weeks 4–6 · Load</div><p>Add weight to main lifts weekly. Reduce rest periods by 15 sec on accessory work. Cardio intensity increases by 1 level.</p></div>
+    <div class="phase-card"><div class="phase-label">Weeks 7–9 · Intensify</div><p>Drop sets on all isolation movements. Add 1 extra ab exercise per session. Cardio duration extends by 5 min.</p></div>
+    <div class="phase-card"><div class="phase-label">Weeks 10–11 · Peak</div><p>Max effort on all main lifts. Minimal rest between supersets. All cardio at upper intensity range.</p></div>
+    <div class="phase-card"><div class="phase-label">Week 12 · Deload + Test</div><p>50% volume. Test strength benchmarks. Take measurements. Plan the next block from your new baseline.</p></div>
+  </div>
+</div>
+
+<!-- KEY NOTES -->
+<div class="key-notes">
+  <div class="note"><div class="note-head"><span>Nutrition</span></div><p>300–500 calorie deficit daily. 242g+ protein minimum — non-negotiable for muscle retention while cutting. Carbs timed around training, fats in other meals.</p></div>
+  <div class="note"><div class="note-head"><span>Abs Strategy</span></div><p>Abs are revealed by fat loss and built by weighted training. The cable crunch and hanging leg raise are your two most important movements — progress weight on cable crunch like any other lift.</p></div>
+  <div class="note"><div class="note-head"><span>Chest Priority</span></div><p>Sunday is your primary chest day — heaviest pressing happens here. Saturday provides a second stimulus via antagonist supersets. Two training doses per week accelerates development significantly.</p></div>
+  <div class="note"><div class="note-head"><span>Rest Days — Tue / Thu</span></div><p>Full rest or light activity only. A 20-min walk, gentle mobility work, or nothing at all. Recovery is where adaptation happens — don't compress it.</p></div>
+  <div class="note"><div class="note-head"><span>Flexibility</span></div><p>Over 12 weeks of daily hip openers, thoracic rotations, and targeted post-session stretching, your range of motion will transform significantly. The warmup work is not optional.</p></div>
+  <div class="note"><div class="note-head"><span>Tracking</span></div><p>Log lifts weekly. Progress photos every 2 weeks. Scale weight is unreliable — use measurements and how your clothes fit as primary indicators.</p></div>
+</div>
+
+<script>
+  function showDay(i) {
+    document.querySelectorAll('.day-btn').forEach((b, j) => b.classList.toggle('active', i === j));
+    document.querySelectorAll('.day-panel').forEach((p, j) => p.classList.toggle('active', i === j));
+  }
+</script>
+</body>
+</html>
