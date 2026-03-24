@@ -154,7 +154,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .cal-card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 14px; margin-bottom: 28px; }
 .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .cal-title { font-family: var(–sans); font-size: 16px; font-weight: 700; color: var(–text-bright); }
-.cal-nav { background: none; border: 1px solid var(–border); border-radius: 6px; color: var(–text-dim); font-size: 14px; width: 30px; height: 30px; cursor: pointer; transition: border-color 0.2s, color 0.2s; display: flex; align-items: center; justify-content: center; }
+.cal-nav { background: none; border: 1px solid var(–border); border-radius: 6px; color: var(–text-dim); font-size: 14px; width: 30px; height: 30px; cursor: pointer; transition: border-color 0.2s, color 0.2s; display: flex; align-items: center; justify-content: center; -webkit-appearance: none; appearance: none; }
 .cal-nav:hover { border-color: var(–teal); color: var(–teal); }
 .cal-dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 3px; }
 .cal-dow { font-family: var(–mono); font-size: 8px; letter-spacing: 0.5px; text-transform: uppercase; color: var(–text-dim); text-align: center; padding: 3px 0; }
@@ -188,10 +188,10 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .log-group { display: flex; border-radius: var(–radius); overflow: hidden; border: 1px solid rgba(0,220,200,0.3); }
 .log-group.ghk-group  { border-color: rgba(167,139,250,0.3); }
 .log-group.mots-group { border-color: rgba(251,113,133,0.3); }
-.log-btn-add { flex: 1; background: var(–teal-dim); color: var(–teal); font-family: var(–mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 13px 6px; cursor: pointer; border: none; border-right: 1px solid rgba(0,220,200,0.2); transition: background 0.15s, transform 0.1s; user-select: none; line-height: 1.3; }
+.log-btn-add { flex: 1; background: var(–teal-dim); color: var(–teal); font-family: var(–mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 13px 6px; cursor: pointer; border: none; border-right: 1px solid rgba(0,220,200,0.2); transition: background 0.15s, transform 0.1s; user-select: none; line-height: 1.3; -webkit-appearance: none; appearance: none; }
 .log-btn-add:active { transform: scale(0.97); }
 .log-btn-add:hover { background: rgba(0,220,200,0.15); }
-.log-btn-sub { width: 42px; flex-shrink: 0; background: rgba(0,220,200,0.04); color: var(–text-dim); font-family: var(–mono); font-size: 16px; cursor: pointer; border: none; transition: background 0.15s, color 0.15s, transform 0.1s; user-select: none; }
+.log-btn-sub { width: 42px; flex-shrink: 0; background: rgba(0,220,200,0.04); color: var(–text-dim); font-family: var(–mono); font-size: 16px; cursor: pointer; border: none; transition: background 0.15s, color 0.15s, transform 0.1s; user-select: none; -webkit-appearance: none; appearance: none; }
 .log-btn-sub:active { transform: scale(0.95); }
 .log-btn-sub:hover { background: rgba(248,113,113,0.12); color: #f87171; }
 .ghk-group  .log-btn-add { background: rgba(167,139,250,0.07); color: #a78bfa; border-right-color: rgba(167,139,250,0.2); }
@@ -238,7 +238,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .vial-unit.mots      { border-color: rgba(251,113,133,0.25); background: rgba(251,113,133,0.06); }
 .vial-unit.mots.used { background: var(–rose); border-color: var(–rose); box-shadow: 0 0 3px rgba(251,113,133,0.4); }
 .vial-sub { font-family: var(–mono); font-size: 9px; color: var(–text-dim); margin-top: 3px; }
-.reset-vial { background: none; border: 1px solid var(–border); border-radius: 4px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; margin-top: 4px; }
+.reset-vial { background: none; border: 1px solid var(–border); border-radius: 4px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; margin-top: 4px; -webkit-appearance: none; appearance: none; }
 .reset-vial:hover { border-color: var(–teal); color: var(–teal); }
 
 /* Adherence */
@@ -263,9 +263,9 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .weight-input::-webkit-outer-spin-button, .weight-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .weight-input:focus { border-color: rgba(0,220,200,0.5); }
 .unit-toggle { display: flex; border: 1px solid var(–border); border-radius: 6px; overflow: hidden; }
-.ut { background: none; border: none; color: var(–text-dim); font-family: var(–mono); font-size: 11px; padding: 6px 11px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.ut { background: none; border: none; color: var(–text-dim); font-family: var(–mono); font-size: 11px; padding: 6px 11px; cursor: pointer; transition: background 0.2s, color 0.2s; -webkit-appearance: none; appearance: none; }
 .ut.active { background: rgba(0,220,200,0.12); color: var(–teal); }
-.weight-log-btn { background: var(–teal-dim); border: 1px solid rgba(0,220,200,0.3); border-radius: 8px; color: var(–teal); font-family: var(–mono); font-size: 11px; padding: 10px 18px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: background 0.2s; }
+.weight-log-btn { background: var(–teal-dim); border: 1px solid rgba(0,220,200,0.3); border-radius: 8px; color: var(–teal); font-family: var(–mono); font-size: 11px; padding: 10px 18px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: background 0.2s; -webkit-appearance: none; appearance: none; }
 .weight-stats { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
 .wstat { text-align: center; }
 .wstat-val { font-family: var(–mono); font-size: 18px; color: var(–text-bright); line-height: 1; }
@@ -292,7 +292,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 /* DOSE LOG */
 .dose-log-card { background: var(–bg2); border: 1px solid var(–border); border-radius: var(–radius); padding: 20px; margin-bottom: 28px; }
 .dose-log-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-.filter-btn { background: none; border: 1px solid var(–border); border-radius: 6px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 4px 10px; cursor: pointer; letter-spacing: 1.5px; text-transform: uppercase; transition: all 0.2s; }
+.filter-btn { background: none; border: 1px solid var(–border); border-radius: 6px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 4px 10px; cursor: pointer; letter-spacing: 1.5px; text-transform: uppercase; transition: all 0.2s; -webkit-appearance: none; appearance: none; }
 .filter-btn.active-all  { border-color: rgba(0,220,200,0.4); color: var(–teal); background: rgba(0,220,200,0.06); }
 .filter-btn.active-reta { border-color: rgba(0,220,200,0.4); color: var(–teal); background: rgba(0,220,200,0.06); }
 .filter-btn.active-ghk  { border-color: rgba(167,139,250,0.4); color: #a78bfa; background: rgba(167,139,250,0.06); }
