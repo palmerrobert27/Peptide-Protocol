@@ -688,23 +688,76 @@ function renderCalendar() {
 
 // ── RENDER MONTHLY ─────────────────────────────
 function renderMonthlyStats(){
-  const now=new Date(),som=new Date(now.getFullYear(),now.getMonth(),1);
-  const logged=S.logs.filter(l=>new Date(l.ts)>=som);
-  const rL=logged.filter(l=>l.peptide==='Retatrutide').length;
-  const gL=logged.filter(l=>l.peptide==='GHK-Cu').length;
-  const mL=logged.filter(l=>l.peptide==='MOTS-C').length;
-  const cL=logged.filter(l=>l.peptide==='CJC-1295+Ipa').length;
-  const RT=MONTHLY_TARGET.Retatrutide,GT=MONTHLY_TARGET['GHK-Cu'],MT=MONTHLY_TARGET['MOTS-C'],CT=MONTHLY_TARGET['CJC-1295+Ipa'];
-  const rP=Math.min(100,Math.round(rL/RT*100)),gP=Math.min(100,Math.round(gL/GT*100)),mP=Math.min(100,Math.round(mL/MT*100)),cP=Math.min(100,Math.round(cL/CT*100));
-  const daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
+  const now = new Date();
+  const y = now.getFullYear(), mo = now.getMonth();
+  const som = new Date(y, mo, 1);
+  const eom = new Date(y, mo+1, 0); // last day of month
+  const CJC_START = new Date(2026, 2, 24);
+
+  // Count every scheduled dose in this calendar month for each peptide
+  function countScheduled(peptide) {
+    let count = 0;
+    for (let d = 1; d <= eom.getDate(); d++) {
+      const dt = new Date(y, mo, d);
+      const dow = dt.getDay();
+      if (peptide === 'Retatrutide' && (dow === 0 || dow === 3)) count++;
+      if (peptide === 'GHK-Cu' && dow >= 1 && dow <= 5) count++;
+      if (peptide === 'MOTS-C' && (dow === 1 || dow === 3 || dow === 5)) count++;
+      if (peptide === 'CJC-1295+Ipa' && dow >= 1 && dow <= 5 && dt >= CJC_START) count++;
+    }
+    return count;
+  }
+
+  // Count remaining doses from now to end of month
+  function countRemaining(peptide) {
+    let count = 0;
+    for (let d = now.getDate(); d <= eom.getDate(); d++) {
+      const dt = new Date(y, mo, d);
+      const dow = dt.getDay();
+      const isToday = d === now.getDate();
+      // For today, only count if the dose time hasn't passed yet
+      if (peptide === 'Retatrutide') {
+        if (dow === 0 && (!isToday || now.getHours() < 10)) count++;
+        if (dow === 3 && (!isToday || now.getHours() < 22)) count++;
+      }
+      if (peptide === 'GHK-Cu' && dow >= 1 && dow <= 5 && (!isToday || now.getHours() < 22)) count++;
+      if (peptide === 'MOTS-C' && (dow===1||dow===3||dow===5) && (!isToday || now.getHours() < 10)) count++;
+      if (peptide === 'CJC-1295+Ipa' && dow >= 1 && dow <= 5 && dt >= CJC_START && (!isToday || now.getHours() < 22)) count++;
+    }
+    return count;
+  }
+
+  const logged = S.logs.filter(l => new Date(l.ts) >= som);
+  const rL = logged.filter(l=>l.peptide==='Retatrutide').length;
+  const gL = logged.filter(l=>l.peptide==='GHK-Cu').length;
+  const mL = logged.filter(l=>l.peptide==='MOTS-C').length;
+  const cL = logged.filter(l=>l.peptide==='CJC-1295+Ipa').length;
+
+  const RT = countScheduled('Retatrutide');
+  const GT = countScheduled('GHK-Cu');
+  const MT = countScheduled('MOTS-C');
+  const CT = countScheduled('CJC-1295+Ipa');
+
+  const rRem = countRemaining('Retatrutide');
+  const gRem = countRemaining('GHK-Cu');
+  const mRem = countRemaining('MOTS-C');
+  const cRem = countRemaining('CJC-1295+Ipa');
+
+  const rP = Math.min(100, RT > 0 ? Math.round(rL/RT*100) : 0);
+  const gP = Math.min(100, GT > 0 ? Math.round(gL/GT*100) : 0);
+  const mP = Math.min(100, MT > 0 ? Math.round(mL/MT*100) : 0);
+  const cP = Math.min(100, CT > 0 ? Math.round(cL/CT*100) : 0);
+
+  const daysLeft = eom.getDate() - now.getDate();
+
   document.getElementById('monthly-stats').innerHTML=`
-    <div class="stat-row"><span class="stat-row-label">Reta logged</span><span class="stat-row-val">${rL} / ${RT}</span></div>
+    <div class="stat-row"><span class="stat-row-label">Reta logged</span><span class="stat-row-val">${rL} / ${RT} <span style="color:var(--text-dim);font-size:10px">(${rRem} left)</span></span></div>
     <div class="prog-bar"><div class="prog-fill fill-reta" style="width:${rP}%"></div></div>
-    <div class="stat-row"><span class="stat-row-label">GHK-Cu logged</span><span class="stat-row-val">${gL} / ${GT}</span></div>
+    <div class="stat-row"><span class="stat-row-label">GHK-Cu logged</span><span class="stat-row-val">${gL} / ${GT} <span style="color:var(--text-dim);font-size:10px">(${gRem} left)</span></span></div>
     <div class="prog-bar"><div class="prog-fill fill-ghk" style="width:${gP}%"></div></div>
-    <div class="stat-row"><span class="stat-row-label">MOTS-C logged</span><span class="stat-row-val">${mL} / ${MT}</span></div>
+    <div class="stat-row"><span class="stat-row-label">MOTS-C logged</span><span class="stat-row-val">${mL} / ${MT} <span style="color:var(--text-dim);font-size:10px">(${mRem} left)</span></span></div>
     <div class="prog-bar"><div class="prog-fill fill-mots" style="width:${mP}%"></div></div>
-    <div class="stat-row"><span class="stat-row-label">CJC+Ipa logged</span><span class="stat-row-val">${cL} / ${CT}</span></div>
+    <div class="stat-row"><span class="stat-row-label">CJC+Ipa logged</span><span class="stat-row-val">${cL} / ${CT} <span style="color:var(--text-dim);font-size:10px">(${cRem} left)</span></span></div>
     <div class="prog-bar"><div class="prog-fill fill-cjc" style="width:${cP}%"></div></div>
     <div class="stat-row" style="margin-top:4px"><span class="stat-row-label">Days remaining</span><span class="stat-row-val">${daysLeft}</span></div>`;
 }
