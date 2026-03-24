@@ -215,10 +215,10 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .stat-row-val { font-size: 12px; color: var(–teal); font-family: var(–mono); }
 .prog-bar { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin: 3px 0 6px; }
 .prog-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-.fill-reta { background: linear-gradient(90deg, var(–teal), rgba(0,220,200,0.4)); }
+.fill-reta { background: linear-gradient(90deg, #00dcc8, rgba(0,220,200,0.4)); }
 .fill-ghk  { background: linear-gradient(90deg, #a78bfa, rgba(167,139,250,0.4)); }
-.fill-mots { background: linear-gradient(90deg, var(–rose), rgba(251,113,133,0.4)); }
-.fill-cjc  { background: linear-gradient(90deg, var(–amber), rgba(245,166,35,0.4)); }
+.fill-mots { background: linear-gradient(90deg, #fb7185, rgba(251,113,133,0.4)); }
+.fill-cjc  { background: linear-gradient(90deg, #f5a623, rgba(245,166,35,0.4)); }
 
 /* Vials */
 .vial-block { margin-bottom: 11px; }
@@ -228,15 +228,15 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .vial-name span.c3  { color: var(–rose); }
 .vial-name span.c4  { color: var(–amber); }
 .vial-unit.cjc       { border-color: rgba(245,166,35,0.25); background: rgba(245,166,35,0.06); }
-.vial-unit.cjc.used  { background: var(–amber); border-color: var(–amber); box-shadow: 0 0 3px rgba(245,166,35,0.4); }
+.vial-unit.cjc.used  { background: #f5a623; border-color: #f5a623; box-shadow: 0 0 3px rgba(245,166,35,0.4); }
 .vial-track { display: flex; gap: 2px; flex-wrap: wrap; }
 .vial-unit { width: 10px; height: 14px; border-radius: 2px; border: 1px solid; }
 .vial-unit.reta      { border-color: rgba(0,220,200,0.25); background: rgba(0,220,200,0.06); }
-.vial-unit.reta.used { background: var(–teal); border-color: var(–teal); box-shadow: 0 0 3px rgba(0,220,200,0.4); }
+.vial-unit.reta.used { background: #00dcc8; border-color: #00dcc8; box-shadow: 0 0 3px rgba(0,220,200,0.4); }
 .vial-unit.ghk       { border-color: rgba(167,139,250,0.25); background: rgba(167,139,250,0.06); }
 .vial-unit.ghk.used  { background: #a78bfa; border-color: #a78bfa; box-shadow: 0 0 3px rgba(167,139,250,0.4); }
 .vial-unit.mots      { border-color: rgba(251,113,133,0.25); background: rgba(251,113,133,0.06); }
-.vial-unit.mots.used { background: var(–rose); border-color: var(–rose); box-shadow: 0 0 3px rgba(251,113,133,0.4); }
+.vial-unit.mots.used { background: #fb7185; border-color: #fb7185; box-shadow: 0 0 3px rgba(251,113,133,0.4); }
 .vial-sub { font-family: var(–mono); font-size: 9px; color: var(–text-dim); margin-top: 3px; }
 .reset-vial { background: #0b1118; border: 1px solid rgba(0,220,200,0.15); border-radius: 4px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; margin-top: 4px; -webkit-appearance: none; appearance: none; }
 .reset-vial:hover { border-color: var(–teal); color: var(–teal); }
@@ -265,7 +265,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .unit-toggle { display: flex; border: 1px solid var(–border); border-radius: 6px; overflow: hidden; }
 .ut { background: none; border: none; color: var(–text-dim); font-family: var(–mono); font-size: 11px; padding: 6px 11px; cursor: pointer; transition: background 0.2s, color 0.2s; -webkit-appearance: none; appearance: none; }
 .ut.active { background: rgba(0,220,200,0.12); color: var(–teal); }
-.weight-log-btn { background: var(–teal-dim); border: 1px solid rgba(0,220,200,0.3); border-radius: 8px; color: var(–teal); font-family: var(–mono); font-size: 11px; padding: 10px 18px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: background 0.2s; -webkit-appearance: none; appearance: none; }
+.weight-log-btn { background: #0d2420; border: 1px solid rgba(0,220,200,0.3); border-radius: 8px; color: #00dcc8; font-family: var(–mono); font-size: 11px; padding: 10px 18px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: background 0.2s; -webkit-appearance: none; appearance: none; }
 .weight-stats { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
 .wstat { text-align: center; }
 .wstat-val { font-family: var(–mono); font-size: 18px; color: var(–text-bright); line-height: 1; }
