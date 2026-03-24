@@ -188,22 +188,22 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .log-group { display: flex; border-radius: var(–radius); overflow: hidden; border: 1px solid rgba(0,220,200,0.3); }
 .log-group.ghk-group  { border-color: rgba(167,139,250,0.3); }
 .log-group.mots-group { border-color: rgba(251,113,133,0.3); }
-.log-btn-add { flex: 1; background: var(–teal-dim); color: var(–teal); font-family: var(–mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 13px 6px; cursor: pointer; border: none; border-right: 1px solid rgba(0,220,200,0.2); transition: background 0.15s, transform 0.1s; user-select: none; line-height: 1.3; -webkit-appearance: none; appearance: none; }
-.log-btn-add:active { transform: scale(0.97); }
-.log-btn-add:hover { background: rgba(0,220,200,0.15); }
-.log-btn-sub { width: 42px; flex-shrink: 0; background: rgba(0,220,200,0.04); color: var(–text-dim); font-family: var(–mono); font-size: 16px; cursor: pointer; border: none; transition: background 0.15s, color 0.15s, transform 0.1s; user-select: none; -webkit-appearance: none; appearance: none; }
+.log-btn-add { flex: 1; background: #0d2420; color: var(–teal); font-family: var(–mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 13px 6px; cursor: pointer; border: none; border-right: 1px solid rgba(0,220,200,0.2); transition: background 0.15s, transform 0.1s; user-select: none; line-height: 1.3; -webkit-appearance: none; appearance: none; }
+.log-btn-add:active { transform: scale(0.97); background: #133a30; }
+.log-btn-add:hover { background: #133a30; }
+.log-btn-sub { width: 42px; flex-shrink: 0; background: #0b1118; color: var(–text-dim); font-family: var(–mono); font-size: 16px; cursor: pointer; border: none; transition: background 0.15s, color 0.15s, transform 0.1s; user-select: none; -webkit-appearance: none; appearance: none; }
 .log-btn-sub:active { transform: scale(0.95); }
-.log-btn-sub:hover { background: rgba(248,113,113,0.12); color: #f87171; }
-.ghk-group  .log-btn-add { background: rgba(167,139,250,0.07); color: #a78bfa; border-right-color: rgba(167,139,250,0.2); }
-.ghk-group  .log-btn-add:hover { background: rgba(167,139,250,0.15); }
-.ghk-group  .log-btn-sub { background: rgba(167,139,250,0.04); }
-.mots-group .log-btn-add { background: rgba(251,113,133,0.07); color: var(–rose); border-right-color: rgba(251,113,133,0.2); }
-.mots-group .log-btn-add:hover { background: rgba(251,113,133,0.15); }
-.mots-group .log-btn-sub { background: rgba(251,113,133,0.04); }
-.cjc-group  { border-color: rgba(245,166,35,0.3) !important; }
-.cjc-group  .log-btn-add { background: rgba(245,166,35,0.07); color: var(–amber); border-right-color: rgba(245,166,35,0.2); }
-.cjc-group  .log-btn-add:hover { background: rgba(245,166,35,0.15); }
-.cjc-group  .log-btn-sub { background: rgba(245,166,35,0.04); }
+.log-btn-sub:hover { background: #2a1520; color: #f87171; }
+.ghk-group  .log-btn-add { background: #141028; color: #a78bfa; border-right-color: rgba(167,139,250,0.2); }
+.ghk-group  .log-btn-add:active, .ghk-group .log-btn-add:hover { background: #1e1638; }
+.ghk-group  .log-btn-sub { background: #0f0d1a; }
+.mots-group .log-btn-add { background: #281018; color: var(–rose); border-right-color: rgba(251,113,133,0.2); }
+.mots-group .log-btn-add:active, .mots-group .log-btn-add:hover { background: #381520; }
+.mots-group .log-btn-sub { background: #180d10; }
+.cjc-group  { border-color: rgba(245,166,35,0.3); }
+.cjc-group  .log-btn-add { background: #231c08; color: var(–amber); border-right-color: rgba(245,166,35,0.2); }
+.cjc-group  .log-btn-add:active, .cjc-group .log-btn-add:hover { background: #332508; }
+.cjc-group  .log-btn-sub { background: #161208; }
 
 /* STATS GRID */
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
@@ -238,7 +238,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 .vial-unit.mots      { border-color: rgba(251,113,133,0.25); background: rgba(251,113,133,0.06); }
 .vial-unit.mots.used { background: var(–rose); border-color: var(–rose); box-shadow: 0 0 3px rgba(251,113,133,0.4); }
 .vial-sub { font-family: var(–mono); font-size: 9px; color: var(–text-dim); margin-top: 3px; }
-.reset-vial { background: none; border: 1px solid var(–border); border-radius: 4px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; margin-top: 4px; -webkit-appearance: none; appearance: none; }
+.reset-vial { background: #0b1118; border: 1px solid rgba(0,220,200,0.15); border-radius: 4px; color: var(–text-dim); font-family: var(–mono); font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: border-color 0.2s, color 0.2s; margin-top: 4px; -webkit-appearance: none; appearance: none; }
 .reset-vial:hover { border-color: var(–teal); color: var(–teal); }
 
 /* Adherence */
