@@ -538,16 +538,16 @@ header { display: flex; align-items: flex-end; justify-content: space-between; m
 
 <script>
 // ── HISTORICAL DATA PRELOAD ────────────────────
-// v11 seed: all doses through Mar 25, CJC AM/PM split, weight through Mar 25
+// v13 seed: removed Mar25 CJC-AM, 2 pre-logged CJC doses
 (function(){
-  if(localStorage.getItem('peptide_v11')) return;
-  ['peptide_v5','peptide_v6','peptide_v7','peptide_v8','peptide_v9','peptide_v10'].forEach(k=>localStorage.removeItem(k));
-  const seed={"logs": [{"peptide": "Retatrutide", "ts": 1772384400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772514000000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772600400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772686800000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772686800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772773200000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772859600000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772989200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773118800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773205200000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773248400000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773291600000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773291600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773378000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773421200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773464400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1773594000000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1773680400000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773723600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773810000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773853200000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773896400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773896400000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773982800000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1774026000000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774069200000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1774198800000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1774285200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774328400000, "dose": 4}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774371600000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774414800000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774414800000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774447200000, "dose": 1}, {"peptide": "MOTS-C", "ts": 1774458000000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1774501200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1774501200000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774501200000, "dose": 1}], "retaUsed": 8, "ghkUsed": 18, "motsUsed": 7, "cjcAmUsed": 2, "cjcPmUsed": 2, "weightUnit": "lbs", "weights": [{"ts": 1767464820000, "lbs": 249.0}, {"ts": 1767882720000, "lbs": 245.0}, {"ts": 1768231200000, "lbs": 248.0}, {"ts": 1768314960000, "lbs": 247.4}, {"ts": 1768411200000, "lbs": 247.2}, {"ts": 1768575540000, "lbs": 246.9}, {"ts": 1768637100000, "lbs": 248.2}, {"ts": 1768919880000, "lbs": 245.8}, {"ts": 1769012940000, "lbs": 247.6}, {"ts": 1769094180000, "lbs": 246.3}, {"ts": 1769190420000, "lbs": 246.1}, {"ts": 1769528640000, "lbs": 249.8}, {"ts": 1769617380000, "lbs": 248.5}, {"ts": 1769700960000, "lbs": 249.3}, {"ts": 1769999460000, "lbs": 242.5}, {"ts": 1770217680000, "lbs": 239.5}, {"ts": 1770303120000, "lbs": 241.0}, {"ts": 1770392280000, "lbs": 238.3}, {"ts": 1770482400000, "lbs": 239.9}, {"ts": 1770651000000, "lbs": 242.2}, {"ts": 1770733260000, "lbs": 241.7}, {"ts": 1770827760000, "lbs": 244.1}, {"ts": 1770906360000, "lbs": 243.1}, {"ts": 1771093020000, "lbs": 242.5}, {"ts": 1771430460000, "lbs": 244.8}, {"ts": 1771567020000, "lbs": 248.4}, {"ts": 1771709220000, "lbs": 242.6}, {"ts": 1771863600000, "lbs": 242.2}, {"ts": 1772035800000, "lbs": 242.3}, {"ts": 1772118540000, "lbs": 241.7}, {"ts": 1772206920000, "lbs": 244.0}, {"ts": 1772468580000, "lbs": 242.1}, {"ts": 1772552280000, "lbs": 241.5}, {"ts": 1772641080000, "lbs": 243.8}, {"ts": 1772719260000, "lbs": 241.6}, {"ts": 1772808720000, "lbs": 241.7}, {"ts": 1772877060000, "lbs": 241.7}, {"ts": 1772994360000, "lbs": 241.4}, {"ts": 1773069900000, "lbs": 241.1}, {"ts": 1773152520000, "lbs": 241.7}, {"ts": 1773241200000, "lbs": 240.9}, {"ts": 1773325200000, "lbs": 239.9}, {"ts": 1773414540000, "lbs": 240.7}, {"ts": 1773505080000, "lbs": 239.4}, {"ts": 1773591840000, "lbs": 238.1}, {"ts": 1773672060000, "lbs": 237.1}, {"ts": 1773756420000, "lbs": 236.8}, {"ts": 1773848580000, "lbs": 236.8}, {"ts": 1773928680000, "lbs": 237.1}, {"ts": 1774016820000, "lbs": 236.3}, {"ts": 1774278000000, "lbs": 234.3}, {"ts": 1774450200000, "lbs": 233.9}], "installDismissed": false};
-  localStorage.setItem('peptide_v11', JSON.stringify(seed));
+  if(localStorage.getItem('peptide_v13')) return;
+  ['peptide_v5','peptide_v6','peptide_v7','peptide_v8','peptide_v9','peptide_v10','peptide_v11','peptide_v12'].forEach(k=>localStorage.removeItem(k));
+  const seed={"logs":[{"peptide":"Retatrutide","ts":1772384400000,"dose":10},{"peptide":"GHK-Cu","ts":1772514000000,"dose":4},{"peptide":"GHK-Cu","ts":1772600400000,"dose":4},{"peptide":"Retatrutide","ts":1772686800000,"dose":10},{"peptide":"GHK-Cu","ts":1772686800000,"dose":4},{"peptide":"GHK-Cu","ts":1772773200000,"dose":4},{"peptide":"GHK-Cu","ts":1772859600000,"dose":4},{"peptide":"Retatrutide","ts":1772989200000,"dose":10},{"peptide":"GHK-Cu","ts":1773118800000,"dose":4},{"peptide":"GHK-Cu","ts":1773205200000,"dose":4},{"peptide":"MOTS-C","ts":1773248400000,"dose":22},{"peptide":"Retatrutide","ts":1773291600000,"dose":10},{"peptide":"GHK-Cu","ts":1773291600000,"dose":4},{"peptide":"GHK-Cu","ts":1773378000000,"dose":4},{"peptide":"MOTS-C","ts":1773421200000,"dose":22},{"peptide":"GHK-Cu","ts":1773464400000,"dose":4},{"peptide":"Retatrutide","ts":1773594000000,"dose":10},{"peptide":"MOTS-C","ts":1773680400000,"dose":22},{"peptide":"GHK-Cu","ts":1773723600000,"dose":4},{"peptide":"GHK-Cu","ts":1773810000000,"dose":4},{"peptide":"MOTS-C","ts":1773853200000,"dose":22},{"peptide":"Retatrutide","ts":1773896400000,"dose":10},{"peptide":"GHK-Cu","ts":1773896400000,"dose":4},{"peptide":"GHK-Cu","ts":1773982800000,"dose":4},{"peptide":"MOTS-C","ts":1774026000000,"dose":22},{"peptide":"GHK-Cu","ts":1774069200000,"dose":4},{"peptide":"Retatrutide","ts":1774198800000,"dose":10},{"peptide":"MOTS-C","ts":1774285200000,"dose":22},{"peptide":"GHK-Cu","ts":1774328400000,"dose":4},{"peptide":"CJC-1295+Ipa-AM","ts":1774371600000,"dose":1},{"peptide":"GHK-Cu","ts":1774414800000,"dose":4},{"peptide":"CJC-1295+Ipa-PM","ts":1774414800000,"dose":1},{"peptide":"MOTS-C","ts":1774458000000,"dose":22},{"peptide":"Retatrutide","ts":1774501200000,"dose":10},{"peptide":"GHK-Cu","ts":1774501200000,"dose":4},{"peptide":"CJC-1295+Ipa-PM","ts":1774501200000,"dose":1}],"retaUsed":8,"ghkUsed":18,"motsUsed":7,"cjcAmUsed":1,"cjcPmUsed":1,"weightUnit":"lbs","weights":[{"ts":1767464820000,"lbs":249.0},{"ts":1767882720000,"lbs":245.0},{"ts":1768231200000,"lbs":248.0},{"ts":1768314960000,"lbs":247.4},{"ts":1768411200000,"lbs":247.2},{"ts":1768575540000,"lbs":246.9},{"ts":1768637100000,"lbs":248.2},{"ts":1768919880000,"lbs":245.8},{"ts":1769012940000,"lbs":247.6},{"ts":1769094180000,"lbs":246.3},{"ts":1769190420000,"lbs":246.1},{"ts":1769528640000,"lbs":249.8},{"ts":1769617380000,"lbs":248.5},{"ts":1769700960000,"lbs":249.3},{"ts":1769999460000,"lbs":242.5},{"ts":1770217680000,"lbs":239.5},{"ts":1770303120000,"lbs":241.0},{"ts":1770392280000,"lbs":238.3},{"ts":1770482400000,"lbs":239.9},{"ts":1770651000000,"lbs":242.2},{"ts":1770733260000,"lbs":241.7},{"ts":1770827760000,"lbs":244.1},{"ts":1770906360000,"lbs":243.1},{"ts":1771093020000,"lbs":242.5},{"ts":1771430460000,"lbs":244.8},{"ts":1771567020000,"lbs":248.4},{"ts":1771709220000,"lbs":242.6},{"ts":1771863600000,"lbs":242.2},{"ts":1772035800000,"lbs":242.3},{"ts":1772118540000,"lbs":241.7},{"ts":1772206920000,"lbs":244.0},{"ts":1772468580000,"lbs":242.1},{"ts":1772552280000,"lbs":241.5},{"ts":1772641080000,"lbs":243.8},{"ts":1772719260000,"lbs":241.6},{"ts":1772808720000,"lbs":241.7},{"ts":1772877060000,"lbs":241.7},{"ts":1772994360000,"lbs":241.4},{"ts":1773069900000,"lbs":241.1},{"ts":1773152520000,"lbs":241.7},{"ts":1773241200000,"lbs":240.9},{"ts":1773325200000,"lbs":239.9},{"ts":1773414540000,"lbs":240.7},{"ts":1773505080000,"lbs":239.4},{"ts":1773591840000,"lbs":238.1},{"ts":1773672060000,"lbs":237.1},{"ts":1773756420000,"lbs":236.8},{"ts":1773848580000,"lbs":236.8},{"ts":1773928680000,"lbs":237.1},{"ts":1774016820000,"lbs":236.3},{"ts":1774278000000,"lbs":234.3},{"ts":1774450200000,"lbs":233.9}],"installDismissed":false};
+  localStorage.setItem('peptide_v13', JSON.stringify(seed));
 })();
 
 // ── STATE ──────────────────────────────────────
-const KEY = 'peptide_v11';
+const KEY = 'peptide_v13';
 let S = JSON.parse(localStorage.getItem(KEY)||'null')||{
   logs:[], retaUsed:0, ghkUsed:0, motsUsed:0, cjcAmUsed:0, cjcPmUsed:0,
   weightUnit:'lbs', weights:[], installDismissed:false
@@ -569,7 +569,7 @@ function dismissInstall(){
 }
 
 // ── VIAL / DOSE CONFIG ─────────────────────────
-const VIAL={Retatrutide:30,'GHK-Cu':75,'MOTS-C':13,'CJC-1295+Ipa-AM':50,'CJC-1295+Ipa-PM':50};
+const VIAL={Retatrutide:30,'GHK-Cu':75,'MOTS-C':13,'CJC-1295+Ipa':100};
 const DOSE={Retatrutide:10,'GHK-Cu':4,'MOTS-C':22,'CJC-1295+Ipa-AM':1,'CJC-1295+Ipa-PM':1};
 const MONTHLY_TARGET={Retatrutide:8,'GHK-Cu':25,'MOTS-C':12,'CJC-1295+Ipa-AM':25,'CJC-1295+Ipa-PM':25};
 
@@ -684,7 +684,7 @@ function renderCalendar() {
       else if (isPastDose) pillCls += ' unlogged past-dose';
 
       const icon = logged ? '✓' : '·';
-      const name = dose.peptide === 'Retatrutide' ? 'Reta' : dose.peptide === 'CJC-1295+Ipa' ? 'CJC' : dose.peptide;
+      const name = dose.peptide === 'Retatrutide' ? 'Reta' : (dose.peptide === 'CJC-1295+Ipa-AM' || dose.peptide === 'CJC-1295+Ipa-PM') ? 'CJC' : dose.peptide;
       const timeShort = dose.time.replace(':00','').replace(' ','');
 
       pillsHtml += `<div class="${pillCls}" title="${dose.peptide} ${dose.time} · ${dose.units}">
@@ -747,7 +747,9 @@ function renderMonthlyStats(){
   const rL = logged.filter(l=>l.peptide==='Retatrutide').length;
   const gL = logged.filter(l=>l.peptide==='GHK-Cu').length;
   const mL = logged.filter(l=>l.peptide==='MOTS-C').length;
-  const cL = logged.filter(l=>l.peptide==='CJC-1295+Ipa').length;
+  const caL = logged.filter(l=>l.peptide==='CJC-1295+Ipa-AM').length;
+  const cpL = logged.filter(l=>l.peptide==='CJC-1295+Ipa-PM').length;
+  const cL = caL + cpL;
 
   const RT = countScheduled('Retatrutide');
   const GT = countScheduled('GHK-Cu');
@@ -757,7 +759,7 @@ function renderMonthlyStats(){
   const rRem = countRemaining('Retatrutide');
   const gRem = countRemaining('GHK-Cu');
   const mRem = countRemaining('MOTS-C');
-  const cRem = countRemaining('CJC-1295+Ipa');
+  const cRem = countRemaining('CJC-1295+Ipa-AM') + countRemaining('CJC-1295+Ipa-PM');
 
   const rP = Math.min(100, RT > 0 ? Math.round(rL/RT*100) : 0);
   const gP = Math.min(100, GT > 0 ? Math.round(gL/GT*100) : 0);
@@ -783,15 +785,15 @@ function renderMonthlyStats(){
 
 // ── RENDER VIALS ───────────────────────────────
 function renderVials(){
-  const RT=VIAL.Retatrutide,GT=VIAL['GHK-Cu'],MT=VIAL['MOTS-C'],CAT=VIAL['CJC-1295+Ipa-AM'],CPT=VIAL['CJC-1295+Ipa-PM'];
-  const rU=S.retaUsed%RT,gU=S.ghkUsed%GT,mU=S.motsUsed%MT,caU=(S.cjcAmUsed||0)%CAT,cpU=(S.cjcPmUsed||0)%CPT;
+  const RT=VIAL.Retatrutide,GT=VIAL['GHK-Cu'],MT=VIAL['MOTS-C'],CT=VIAL['CJC-1295+Ipa'];
+  const rU=S.retaUsed%RT,gU=S.ghkUsed%GT,mU=S.motsUsed%MT;
+  const cjcTotal=(S.cjcAmUsed||0)+(S.cjcPmUsed||0), cU=cjcTotal%CT;
   const units=(n,u,cls)=>Array.from({length:n},(_,i)=>`<div class="vial-unit ${cls} ${i<u?'used':''}"></div>`).join('');
   document.getElementById('vials-content').innerHTML=`
     <div class="vial-block"><div class="vial-name">Retatrutide <span>${RT-rU} left</span></div><div class="vial-track">${units(RT,rU,'reta')}</div><div class="vial-sub">${rU}/${RT} · 10 units/dose</div><button class="reset-vial" onclick="resetVial('reta')">New Vial</button></div>
     <div class="vial-block"><div class="vial-name">GHK-Cu <span class="c2">${GT-gU} left</span></div><div class="vial-track">${units(GT,gU,'ghk')}</div><div class="vial-sub">${gU}/${GT} · 4 units/dose</div><button class="reset-vial" onclick="resetVial('ghk')">New Vial</button></div>
     <div class="vial-block"><div class="vial-name">MOTS-C <span class="c3">${MT-mU} left</span></div><div class="vial-track">${units(MT,mU,'mots')}</div><div class="vial-sub">${mU}/${MT} · 22 units/dose</div><button class="reset-vial" onclick="resetVial('mots')">New Vial</button></div>
-    <div class="vial-block"><div class="vial-name">CJC+Ipa AM <span class="c4">${CAT-caU} left</span></div><div class="vial-track">${units(CAT,caU,'cjc')}</div><div class="vial-sub">${caU}/${CAT} · 1 unit/dose</div><button class="reset-vial" onclick="resetVial('cjc-am')">New Vial</button></div>
-    <div class="vial-block"><div class="vial-name">CJC+Ipa PM <span class="c4">${CPT-cpU} left</span></div><div class="vial-track">${units(CPT,cpU,'cjc')}</div><div class="vial-sub">${cpU}/${CPT} · 1 unit/dose</div><button class="reset-vial" onclick="resetVial('cjc-pm')">New Vial</button></div>`;
+    <div class="vial-block"><div class="vial-name">CJC+Ipa <span class="c4">${CT-cU} left</span></div><div class="vial-track">${units(CT,cU,'cjc')}</div><div class="vial-sub">${cU}/${CT} · 1 unit/dose · AM+PM shared</div><button class="reset-vial" onclick="resetVial('cjc')">New Vial</button></div>`;
 }
 
 // ── RENDER ADHERENCE ───────────────────────────
@@ -975,14 +977,15 @@ function renderProtocol(){
     'Retatrutide':   new Date(2026,2,1).getTime(),   // Mar 1
     'GHK-Cu':        new Date(2026,2,2).getTime(),   // Mar 2
     'MOTS-C':        new Date(2026,2,11).getTime(),  // Mar 11
-    'CJC-1295+Ipa':  new Date(2026,2,24).getTime(),  // Mar 24
+    'CJC-1295+Ipa-AM':  new Date(2026,2,24).getTime(),  // Mar 24
+    'CJC-1295+Ipa-PM':  new Date(2026,2,24).getTime(),
   };
   const COLORS = {
     'Retatrutide':'var(--teal)', 'GHK-Cu':'#a78bfa',
-    'MOTS-C':'var(--rose)',      'CJC-1295+Ipa':'var(--amber)'
+    'MOTS-C':'#fb7185',      'CJC-1295+Ipa-AM':'#f5a623', 'CJC-1295+Ipa-PM':'#f5a623'
   };
   const DOSES_PER_WEEK = {
-    'Retatrutide':2, 'GHK-Cu':5, 'MOTS-C':3, 'CJC-1295+Ipa':5
+    'Retatrutide':2, 'GHK-Cu':5, 'MOTS-C':3, 'CJC-1295+Ipa-AM':5, 'CJC-1295+Ipa-PM':5
   };
 
   // Titration guidance per peptide based on weeks on protocol
@@ -1003,7 +1006,7 @@ function renderProtocol(){
       if(weeks < 6)   return {cls:'stable', msg:'✓ Building — MOTS-C effects compound over 4–8 weeks.'};
       return             {cls:'soon',   msg:'⚡ Reassess — consider dose adjustment or cycle break at 8 weeks.'};
     }
-    if(peptide === 'CJC-1295+Ipa'){
+    if(peptide === 'CJC-1295+Ipa-AM' || peptide === 'CJC-1295+Ipa-PM'){
       if(weeks < 1)   return {cls:'new',    msg:'🟢 Just started — give 2–4 weeks to assess GH pulse response.'};
       if(weeks < 8)   return {cls:'stable', msg:'✓ On protocol — typical run is 8–12 weeks. Monitor IGF-1 if possible.'};
       return             {cls:'due',    msg:'🔄 Extended run — consider a 4-week break to prevent GH receptor desensitization.'};
@@ -1011,7 +1014,7 @@ function renderProtocol(){
     return {cls:'stable', msg:'✓ On track.'};
   }
 
-  const peptides = ['Retatrutide','GHK-Cu','MOTS-C','CJC-1295+Ipa'];
+  const peptides = ['Retatrutide','GHK-Cu','MOTS-C','CJC-1295+Ipa-AM','CJC-1295+Ipa-PM'];
   const html = peptides.map(p => {
     const startTs = STARTS[p];
     const daysOn  = Math.floor((now - startTs) / 86400000);
@@ -1020,7 +1023,7 @@ function renderProtocol(){
     const startDate = new Date(startTs);
     const startStr  = `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][startDate.getMonth()]} ${startDate.getDate()}, ${startDate.getFullYear()}`;
     const adv = titrationAdvice(p, weeksOn, totalLogged);
-    const shortName = p==='Retatrutide'?'Retatrutide':p==='CJC-1295+Ipa'?'CJC-1295 + Ipa':p;
+    const shortName = p==='Retatrutide'?'Retatrutide':p==='CJC-1295+Ipa-AM'?'CJC-1295 + Ipa (AM)':p==='CJC-1295+Ipa-PM'?'CJC-1295 + Ipa (PM)':p;
 
     return `<div class="proto-item">
       <div class="proto-header">
@@ -1067,8 +1070,7 @@ function resetVial(t){
   if(t==='reta') S.retaUsed=0;
   else if(t==='ghk') S.ghkUsed=0;
   else if(t==='mots') S.motsUsed=0;
-  else if(t==='cjc-am') S.cjcAmUsed=0;
-  else if(t==='cjc-pm') S.cjcPmUsed=0;
+  else if(t==='cjc'){ S.cjcAmUsed=0; S.cjcPmUsed=0; }
   save();renderVials();toast('New vial started');
 }
 function toast(msg){
