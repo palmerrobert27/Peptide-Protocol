@@ -360,6 +360,28 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .pc-title{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 .pc-title.p{color:#00dcc8;}.pc-title.c{color:#fb7185;}
 
+/* ── BACKDATE MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:#111111;border:1px solid var(--gold-border);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);position:relative;}
+.modal-overlay.show .modal{transform:translateY(0);}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);border-radius:20px 20px 0 0;}
+.modal-handle{width:40px;height:4px;background:var(--gold-border);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--gold-bright);margin-bottom:4px;}
+.modal-sub{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:18px;}
+.modal-peptide-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.mpill{background:#0f0f0f;border:1px solid var(--gold-border);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);cursor:pointer;text-align:center;transition:all 0.2s;-webkit-appearance:none;appearance:none;}
+.mpill.sel-reta{border-color:#00dcc8;color:#00dcc8;background:rgba(0,220,200,0.08);}
+.mpill.sel-ghk{border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,0.08);}
+.mpill.sel-mots{border-color:#fb7185;color:#fb7185;background:rgba(251,113,133,0.08);}
+.mpill.sel-cjc{border-color:#f5a623;color:#f5a623;background:rgba(245,166,35,0.08);}
+.modal-dt-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;}
+.modal-dt-input{background:#0f0f0f;border:1px solid var(--gold-border);border-radius:8px;color:var(--gold);font-family:var(--mono);font-size:14px;padding:12px 14px;width:100%;outline:none;-webkit-appearance:none;appearance:none;margin-bottom:16px;color-scheme:dark;}
+.modal-dt-input:focus{border-color:var(--gold);}
+.modal-confirm{width:100%;background:#1a1500;border:1px solid var(--gold);border-radius:10px;color:var(--gold-bright);font-family:var(--display);font-size:18px;letter-spacing:2px;padding:14px;cursor:pointer;-webkit-appearance:none;appearance:none;transition:background 0.2s;}
+.modal-confirm:active{background:#2a2200;}
+.modal-cancel{width:100%;background:none;border:none;color:var(--text-dim);font-family:var(--mono);font-size:11px;padding:10px;cursor:pointer;-webkit-appearance:none;appearance:none;margin-top:4px;letter-spacing:1px;}
+
 /* ── TOAST ── */
 .toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 16px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--gold-border);border-radius:8px;padding:10px 22px;font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:1px;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:100;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -458,7 +480,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </div>
     <div class="cal-grid" id="cal-grid"></div>
     <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(0,220,200,0.6)"></div>Reta · 10u</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(0,220,200,0.6)"></div>Reta · 15u</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(167,139,250,0.6)"></div>GHK · 4u</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(251,113,133,0.6)"></div>MOTS · 22u</div>
       <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(245,166,35,0.6)"></div>CJC · 1u AM+PM</div>
@@ -474,6 +496,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="log-group"><button class="log-btn-add" onclick="logDose('CJC-1295+Ipa-AM')" style="color:#f5a623;">⊕ CJC AM</button><button class="log-btn-sub" onclick="subtractDose('CJC-1295+Ipa-AM')">−</button></div>
     <div class="log-group"><button class="log-btn-add" onclick="logDose('CJC-1295+Ipa-PM')" style="color:#f5a623;">⊕ CJC PM</button><button class="log-btn-sub" onclick="subtractDose('CJC-1295+Ipa-PM')">−</button></div>
   </div>
+  <button onclick="openBackdate()" style="width:100%;background:#0f0f0f;border:1px solid var(--gold-border);border-radius:8px;color:var(--text-dim);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:10px;cursor:pointer;-webkit-appearance:none;appearance:none;margin-top:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--gold-border)';this.style.color='var(--text-dim)'">⊕ Log Missed / Backdated Dose</button>
 </div>
 
 <!-- PAGE 2: DOSE LOG -->
@@ -642,6 +665,27 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
 </div><!-- /app -->
 
+<!-- BACKDATE MODAL -->
+
+<div class="modal-overlay" id="backdate-overlay" onclick="closeBackdate(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">LOG MISSED DOSE</div>
+    <div class="modal-sub">Select peptide and the date/time you actually took it</div>
+    <div class="modal-peptide-sel" id="modal-peptide-sel">
+      <button class="mpill" id="mp-reta"    onclick="selectMPill('Retatrutide')">Retatrutide</button>
+      <button class="mpill" id="mp-ghk"     onclick="selectMPill('GHK-Cu')">GHK-Cu</button>
+      <button class="mpill" id="mp-mots"    onclick="selectMPill('MOTS-C')">MOTS-C</button>
+      <button class="mpill" id="mp-cjc-am"  onclick="selectMPill('CJC-1295+Ipa-AM')">CJC AM</button>
+      <button class="mpill" id="mp-cjc-pm"  onclick="selectMPill('CJC-1295+Ipa-PM')">CJC PM</button>
+    </div>
+    <div class="modal-dt-label">Date &amp; Time Taken</div>
+    <input class="modal-dt-input" type="datetime-local" id="backdate-dt">
+    <button class="modal-confirm" onclick="confirmBackdate()">LOG DOSE</button>
+    <button class="modal-cancel" onclick="closeBackdate()">Cancel</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -661,16 +705,16 @@ function goTo(i){
 }
 
 // ── HISTORICAL DATA PRELOAD ────────────────────
-// v14 seed: all doses through Mar 30, weights through Mar 30
+// v15 seed: all doses through Apr 1 incl. first 15u Reta dose
 (function(){
-  if(localStorage.getItem('peptide_v14')) return;
-  ['peptide_v5','peptide_v6','peptide_v7','peptide_v8','peptide_v9','peptide_v10','peptide_v11','peptide_v12','peptide_v13'].forEach(k=>localStorage.removeItem(k));
-  const seed={"logs": [{"peptide": "Retatrutide", "ts": 1772384400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772514000000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772600400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772686800000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772686800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772773200000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772859600000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772989200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773118800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773205200000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773248400000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773291600000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773291600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773378000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773421200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773464400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1773594000000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1773680400000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773723600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773810000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773853200000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773896400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773896400000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773982800000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1774026000000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774069200000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1774198800000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1774285200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774328400000, "dose": 4}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774371600000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774414800000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774414800000, "dose": 1}, {"peptide": "MOTS-C", "ts": 1774458000000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1774501200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1774501200000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774501200000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774544400000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774587600000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774587600000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774620000000, "dose": 1}, {"peptide": "MOTS-C", "ts": 1774630800000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774674000000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774674000000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774717200000, "dose": 1}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774760400000, "dose": 1}, {"peptide": "Retatrutide", "ts": 1774803600000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1774890000000, "dose": 22}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774890000000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774933200000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774933200000, "dose": 1}], "retaUsed": 9, "ghkUsed": 21, "motsUsed": 9, "cjcAmUsed": 5, "cjcPmUsed": 6, "weightUnit": "lbs", "weights": [{"ts": 1767464820000, "lbs": 249.0}, {"ts": 1767882720000, "lbs": 245.0}, {"ts": 1768231200000, "lbs": 248.0}, {"ts": 1768314960000, "lbs": 247.4}, {"ts": 1768411200000, "lbs": 247.2}, {"ts": 1768575540000, "lbs": 246.9}, {"ts": 1768637100000, "lbs": 248.2}, {"ts": 1768919880000, "lbs": 245.8}, {"ts": 1769012940000, "lbs": 247.6}, {"ts": 1769094180000, "lbs": 246.3}, {"ts": 1769190420000, "lbs": 246.1}, {"ts": 1769528640000, "lbs": 249.8}, {"ts": 1769617380000, "lbs": 248.5}, {"ts": 1769700960000, "lbs": 249.3}, {"ts": 1769999460000, "lbs": 242.5}, {"ts": 1770217680000, "lbs": 239.5}, {"ts": 1770303120000, "lbs": 241.0}, {"ts": 1770392280000, "lbs": 238.3}, {"ts": 1770482400000, "lbs": 239.9}, {"ts": 1770651000000, "lbs": 242.2}, {"ts": 1770733260000, "lbs": 241.7}, {"ts": 1770827760000, "lbs": 244.1}, {"ts": 1770906360000, "lbs": 243.1}, {"ts": 1771093020000, "lbs": 242.5}, {"ts": 1771430460000, "lbs": 244.8}, {"ts": 1771567020000, "lbs": 248.4}, {"ts": 1771709220000, "lbs": 242.6}, {"ts": 1771863600000, "lbs": 242.2}, {"ts": 1772035800000, "lbs": 242.3}, {"ts": 1772118540000, "lbs": 241.7}, {"ts": 1772206920000, "lbs": 244.0}, {"ts": 1772468580000, "lbs": 242.1}, {"ts": 1772552280000, "lbs": 241.5}, {"ts": 1772641080000, "lbs": 243.8}, {"ts": 1772719260000, "lbs": 241.6}, {"ts": 1772808720000, "lbs": 241.7}, {"ts": 1772877060000, "lbs": 241.7}, {"ts": 1772994360000, "lbs": 241.4}, {"ts": 1773069900000, "lbs": 241.1}, {"ts": 1773152520000, "lbs": 241.7}, {"ts": 1773241200000, "lbs": 240.9}, {"ts": 1773325200000, "lbs": 239.9}, {"ts": 1773414540000, "lbs": 240.7}, {"ts": 1773505080000, "lbs": 239.4}, {"ts": 1773591840000, "lbs": 238.1}, {"ts": 1773672060000, "lbs": 237.1}, {"ts": 1773756420000, "lbs": 236.8}, {"ts": 1773848580000, "lbs": 236.8}, {"ts": 1773928680000, "lbs": 237.1}, {"ts": 1774016820000, "lbs": 236.3}, {"ts": 1774278000000, "lbs": 234.3}, {"ts": 1774363620000, "lbs": 233.9}, {"ts": 1774533600000, "lbs": 232.7}, {"ts": 1774623660000, "lbs": 232.6}, {"ts": 1774704840000, "lbs": 232.6}, {"ts": 1774796220000, "lbs": 232.4}, {"ts": 1774883580000, "lbs": 232.5}, {"ts": 1774939620000, "lbs": 235.2}], "installDismissed": false};
-  localStorage.setItem('peptide_v14', JSON.stringify(seed));
+  if(localStorage.getItem('peptide_v15')) return;
+  ['peptide_v5','peptide_v6','peptide_v7','peptide_v8','peptide_v9','peptide_v10','peptide_v11','peptide_v12','peptide_v13','peptide_v14'].forEach(k=>localStorage.removeItem(k));
+  const seed={"logs": [{"peptide": "Retatrutide", "ts": 1772384400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772514000000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772600400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772686800000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1772686800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772773200000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1772859600000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1772989200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773118800000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773205200000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773248400000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773291600000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773291600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773378000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773421200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773464400000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1773594000000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1773680400000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1773723600000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773810000000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1773853200000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1773896400000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1773896400000, "dose": 4}, {"peptide": "GHK-Cu", "ts": 1773982800000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1774026000000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774069200000, "dose": 4}, {"peptide": "Retatrutide", "ts": 1774198800000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1774285200000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774328400000, "dose": 4}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774371600000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774414800000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774414800000, "dose": 1}, {"peptide": "MOTS-C", "ts": 1774458000000, "dose": 22}, {"peptide": "Retatrutide", "ts": 1774501200000, "dose": 10}, {"peptide": "GHK-Cu", "ts": 1774501200000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774501200000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774544400000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774587600000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774587600000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774620000000, "dose": 1}, {"peptide": "MOTS-C", "ts": 1774630800000, "dose": 22}, {"peptide": "GHK-Cu", "ts": 1774674000000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774674000000, "dose": 1}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774717200000, "dose": 1}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774760400000, "dose": 1}, {"peptide": "Retatrutide", "ts": 1774803600000, "dose": 10}, {"peptide": "MOTS-C", "ts": 1774890000000, "dose": 22}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1774890000000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1774933200000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1774933200000, "dose": 1}, {"peptide": "GHK-Cu", "ts": 1775019600000, "dose": 4}, {"peptide": "MOTS-C", "ts": 1775062800000, "dose": 22}, {"peptide": "CJC-1295+Ipa-AM", "ts": 1775062800000, "dose": 1}, {"peptide": "Retatrutide", "ts": 1775106000000, "dose": 15}, {"peptide": "GHK-Cu", "ts": 1775106000000, "dose": 4}, {"peptide": "CJC-1295+Ipa-PM", "ts": 1775106000000, "dose": 1}], "retaUsed": 10, "ghkUsed": 23, "motsUsed": 10, "cjcAmUsed": 6, "cjcPmUsed": 7, "weightUnit": "lbs", "weights": [{"ts": 1767464820000, "lbs": 249.0}, {"ts": 1767882720000, "lbs": 245.0}, {"ts": 1768231200000, "lbs": 248.0}, {"ts": 1768314960000, "lbs": 247.4}, {"ts": 1768411200000, "lbs": 247.2}, {"ts": 1768575540000, "lbs": 246.9}, {"ts": 1768637100000, "lbs": 248.2}, {"ts": 1768919880000, "lbs": 245.8}, {"ts": 1769012940000, "lbs": 247.6}, {"ts": 1769094180000, "lbs": 246.3}, {"ts": 1769190420000, "lbs": 246.1}, {"ts": 1769528640000, "lbs": 249.8}, {"ts": 1769617380000, "lbs": 248.5}, {"ts": 1769700960000, "lbs": 249.3}, {"ts": 1769999460000, "lbs": 242.5}, {"ts": 1770217680000, "lbs": 239.5}, {"ts": 1770303120000, "lbs": 241.0}, {"ts": 1770392280000, "lbs": 238.3}, {"ts": 1770482400000, "lbs": 239.9}, {"ts": 1770651000000, "lbs": 242.2}, {"ts": 1770733260000, "lbs": 241.7}, {"ts": 1770827760000, "lbs": 244.1}, {"ts": 1770906360000, "lbs": 243.1}, {"ts": 1771093020000, "lbs": 242.5}, {"ts": 1771430460000, "lbs": 244.8}, {"ts": 1771567020000, "lbs": 248.4}, {"ts": 1771709220000, "lbs": 242.6}, {"ts": 1771863600000, "lbs": 242.2}, {"ts": 1772035800000, "lbs": 242.3}, {"ts": 1772118540000, "lbs": 241.7}, {"ts": 1772206920000, "lbs": 244.0}, {"ts": 1772468580000, "lbs": 242.1}, {"ts": 1772552280000, "lbs": 241.5}, {"ts": 1772641080000, "lbs": 243.8}, {"ts": 1772719260000, "lbs": 241.6}, {"ts": 1772808720000, "lbs": 241.7}, {"ts": 1772877060000, "lbs": 241.7}, {"ts": 1772994360000, "lbs": 241.4}, {"ts": 1773069900000, "lbs": 241.1}, {"ts": 1773152520000, "lbs": 241.7}, {"ts": 1773241200000, "lbs": 240.9}, {"ts": 1773325200000, "lbs": 239.9}, {"ts": 1773414540000, "lbs": 240.7}, {"ts": 1773505080000, "lbs": 239.4}, {"ts": 1773591840000, "lbs": 238.1}, {"ts": 1773672060000, "lbs": 237.1}, {"ts": 1773756420000, "lbs": 236.8}, {"ts": 1773848580000, "lbs": 236.8}, {"ts": 1773928680000, "lbs": 237.1}, {"ts": 1774016820000, "lbs": 236.3}, {"ts": 1774278000000, "lbs": 234.3}, {"ts": 1774363620000, "lbs": 233.9}, {"ts": 1774533600000, "lbs": 232.7}, {"ts": 1774623660000, "lbs": 232.6}, {"ts": 1774704840000, "lbs": 232.6}, {"ts": 1774796220000, "lbs": 232.4}, {"ts": 1774883580000, "lbs": 232.5}, {"ts": 1774939620000, "lbs": 235.2}], "installDismissed": false};
+  localStorage.setItem('peptide_v15', JSON.stringify(seed));
 })();
 
 // ── STATE ──────────────────────────────────────
-const KEY = 'peptide_v14';
+const KEY = 'peptide_v15';
 let S = JSON.parse(localStorage.getItem(KEY)||'null')||{
   logs:[], retaUsed:0, ghkUsed:0, motsUsed:0, cjcAmUsed:0, cjcPmUsed:0,
   weightUnit:'lbs', weights:[], installDismissed:false
@@ -679,7 +723,7 @@ const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
 
 // ── CONFIG ─────────────────────────────────────
 const VIAL={Retatrutide:30,'GHK-Cu':75,'MOTS-C':13,'CJC-1295+Ipa':100};
-const DOSE={Retatrutide:10,'GHK-Cu':4,'MOTS-C':22,'CJC-1295+Ipa-AM':1,'CJC-1295+Ipa-PM':1};
+const DOSE={Retatrutide:15,'GHK-Cu':4,'MOTS-C':22,'CJC-1295+Ipa-AM':1,'CJC-1295+Ipa-PM':1};
 const MONTHLY_TARGET={Retatrutide:8,'GHK-Cu':25,'MOTS-C':12,'CJC-1295+Ipa-AM':25,'CJC-1295+Ipa-PM':25};
 
 // ── SCHEDULE ───────────────────────────────────
@@ -688,8 +732,8 @@ function buildSchedule(){
   for(let d=0;d<14;d++){
     const base=new Date(now); base.setDate(base.getDate()+d);
     const dow=base.getDay();
-    if(dow===0) events.push({peptide:'Retatrutide',date:hm(base,10,0),dose:'10 units',col:'teal'});
-    if(dow===3) events.push({peptide:'Retatrutide',date:hm(base,22,0),dose:'10 units',col:'teal'});
+    if(dow===0) events.push({peptide:'Retatrutide',date:hm(base,10,0),dose:'15 units',col:'teal'});
+    if(dow===3) events.push({peptide:'Retatrutide',date:hm(base,22,0),dose:'15 units',col:'teal'});
     if(dow>=1&&dow<=5) events.push({peptide:'GHK-Cu',date:hm(base,22,0),dose:'4 units',col:'purple'});
     if(dow===1||dow===3||dow===5) events.push({peptide:'MOTS-C',date:hm(base,10,0),dose:'22 units',col:'rose'});
     const cjcStart=new Date(2026,2,24);
@@ -761,8 +805,8 @@ function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalend
 
 function getDosesForDate(y,m,d){
   const dt=new Date(y,m,d),dow=dt.getDay(),doses=[];
-  if(dow===0) doses.push({peptide:'Retatrutide',col:'reta',time:'10:00 AM',units:10,h:10,min:0});
-  if(dow===3) doses.push({peptide:'Retatrutide',col:'reta',time:'10:00 PM',units:10,h:22,min:0});
+  if(dow===0) doses.push({peptide:'Retatrutide',col:'reta',time:'10:00 AM',units:15,h:10,min:0});
+  if(dow===3) doses.push({peptide:'Retatrutide',col:'reta',time:'10:00 PM',units:15,h:22,min:0});
   if(dow>=1&&dow<=5) doses.push({peptide:'GHK-Cu',col:'ghk',time:'10:00 PM',units:4,h:22,min:0});
   if(dow===1||dow===3||dow===5) doses.push({peptide:'MOTS-C',col:'mots',time:'10:00 AM',units:22,h:10,min:0});
   const CJC_START=new Date(2026,2,24);
@@ -871,7 +915,7 @@ function renderVials(){
   const cjcTotal=(S.cjcAmUsed||0)+(S.cjcPmUsed||0),cU=cjcTotal%CT;
   const units=(n,u,cls)=>Array.from({length:n},(_,i)=>`<div class="vial-unit ${cls} ${i<u?'used':''}"></div>`).join('');
   document.getElementById('vials-content').innerHTML=`
-    <div class="vial-block"><div class="vial-name">Retatrutide <span>${RT-rU} left</span></div><div class="vial-track">${units(RT,rU,'reta')}</div><div class="vial-sub">${rU}/${RT} · 10 units/dose</div><button class="reset-vial" onclick="resetVial('reta')">New Vial</button></div>
+    <div class="vial-block"><div class="vial-name">Retatrutide <span>${RT-rU} left</span></div><div class="vial-track">${units(RT,rU,'reta')}</div><div class="vial-sub">${rU}/${RT} · 15 units/dose (1.5mg)</div><button class="reset-vial" onclick="resetVial('reta')">New Vial</button></div>
     <div class="vial-block"><div class="vial-name">GHK-Cu <span class="c2">${GT-gU} left</span></div><div class="vial-track">${units(GT,gU,'ghk')}</div><div class="vial-sub">${gU}/${GT} · 4 units/dose</div><button class="reset-vial" onclick="resetVial('ghk')">New Vial</button></div>
     <div class="vial-block"><div class="vial-name">MOTS-C <span class="c3">${MT-mU} left</span></div><div class="vial-track">${units(MT,mU,'mots')}</div><div class="vial-sub">${mU}/${MT} · 22 units/dose</div><button class="reset-vial" onclick="resetVial('mots')">New Vial</button></div>
     <div class="vial-block"><div class="vial-name">CJC+Ipa <span class="c4">${CT-cU} left</span></div><div class="vial-track">${units(CT,cU,'cjc')}</div><div class="vial-sub">${cU}/${CT} · 1 unit/dose · AM+PM shared</div><button class="reset-vial" onclick="resetVial('cjc')">New Vial</button></div>`;
@@ -1025,8 +1069,8 @@ function renderProtocol(){
   function titrationAdvice(peptide,weeks){
     if(peptide==='Retatrutide'){
       if(weeks<2)return{cls:'new',msg:'🟢 New — stay at starting dose. Monitor GI tolerance.'};
-      if(weeks<4)return{cls:'stable',msg:'✓ Stable — maintain current dose through week 4.'};
-      if(weeks<8)return{cls:'soon',msg:'⚡ Consider titrating up if tolerating well.'};
+      if(weeks<4)return{cls:'stable',msg:'✓ Titrated to 1.5mg — monitor tolerance for 2 weeks.'};
+      if(weeks<8)return{cls:'soon',msg:'⚡ On 1.5mg — consider next titration at week 8+ if plateau reached.'};
       return{cls:'due',msg:'⬆ Titration due — evaluate dose increase if loss has plateaued.'};
     }
     if(peptide==='GHK-Cu'){
@@ -1097,7 +1141,65 @@ function toast(msg){
   setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-// ── CLOCK & INIT ───────────────────────────────
+// ── BACKDATE MODAL ─────────────────────────────
+let selectedMPill = null;
+
+function openBackdate(){
+  // Pre-fill datetime to now
+  const now = new Date();
+  const local = new Date(now - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('backdate-dt').value = local;
+  selectedMPill = null;
+  // Reset pill styles
+  ['mp-reta','mp-ghk','mp-mots','mp-cjc-am','mp-cjc-pm'].forEach(id=>{
+    document.getElementById(id).className='mpill';
+  });
+  document.getElementById('backdate-overlay').classList.add('show');
+}
+
+function closeBackdate(e){
+  if(e && e.target !== document.getElementById('backdate-overlay')) return;
+  document.getElementById('backdate-overlay').classList.remove('show');
+}
+
+function selectMPill(p){
+  selectedMPill = p;
+  const map = {
+    'Retatrutide':'mp-reta','GHK-Cu':'mp-ghk','MOTS-C':'mp-mots',
+    'CJC-1295+Ipa-AM':'mp-cjc-am','CJC-1295+Ipa-PM':'mp-cjc-pm'
+  };
+  const cls = {
+    'Retatrutide':'sel-reta','GHK-Cu':'sel-ghk','MOTS-C':'sel-mots',
+    'CJC-1295+Ipa-AM':'sel-cjc','CJC-1295+Ipa-PM':'sel-cjc'
+  };
+  Object.values(map).forEach(id=>document.getElementById(id).className='mpill');
+  document.getElementById(map[p]).className=`mpill ${cls[p]}`;
+}
+
+function confirmBackdate(){
+  if(!selectedMPill){ toast('Select a peptide first'); return; }
+  const dtVal = document.getElementById('backdate-dt').value;
+  if(!dtVal){ toast('Select a date and time'); return; }
+  const ts = new Date(dtVal).getTime();
+  if(isNaN(ts)){ toast('Invalid date'); return; }
+  if(ts > Date.now()){ toast('Cannot log a future dose'); return; }
+  // Log with the backdated timestamp
+  S.logs.push({peptide:selectedMPill, ts, dose:DOSE[selectedMPill]});
+  S.logs.sort((a,b)=>a.ts-b.ts);
+  if(selectedMPill==='Retatrutide') S.retaUsed++;
+  else if(selectedMPill==='GHK-Cu') S.ghkUsed++;
+  else if(selectedMPill==='MOTS-C') S.motsUsed++;
+  else if(selectedMPill==='CJC-1295+Ipa-AM') S.cjcAmUsed=(S.cjcAmUsed||0)+1;
+  else if(selectedMPill==='CJC-1295+Ipa-PM') S.cjcPmUsed=(S.cjcPmUsed||0)+1;
+  save(); renderAll();
+  document.getElementById('backdate-overlay').classList.remove('show');
+  const shortName = selectedMPill.replace('CJC-1295+Ipa-','CJC ');
+  const d = new Date(ts);
+  const dateStr = `${d.getMonth()+1}/${d.getDate()} ${fmt12(d)}`;
+  toast(`✓ ${shortName} logged for ${dateStr}`);
+}
+
+
 function updateClock(){const n=new Date();document.getElementById('live-clock').textContent=fmt12(n);document.getElementById('live-date').textContent=fmtDay(n);}
 function renderAll(){renderHome();renderCalendar();renderMonthlyStats();renderVials();renderAdherence();renderWeightLog();renderDoseLog();renderProtocol();}
 
