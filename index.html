@@ -1,783 +1,843 @@
-<!DOCTYPE html>
+import { useState, useEffect, useCallback } from “react”;
 
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Peptide Protocol</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Protocol">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#000000">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script>
-(function(){
-  const m={name:"Peptide Protocol",short_name:"Protocol",start_url:".",display:"standalone",background_color:"#000000",theme_color:"#000000",orientation:"portrait-primary"};
-  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
-  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
-  document.currentScript.parentNode.insertBefore(l,document.currentScript);
-})();
-</script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-:root{
-  --gold:#c9a84c;--gold-bright:#e8c96a;--gold-dim:rgba(201,168,76,0.15);
-  --gold-border:rgba(201,168,76,0.3);--bg:#000;--bg2:#0a0a0a;--bg3:#111;
-  --text:#e8e0d0;--text-dim:#6b5f4a;--text-mid:#9b8c70;--teal:#00dcc8;
-  --mono:'Share Tech Mono',monospace;--display:'Bebas Neue',sans-serif;--sans:'DM Sans',sans-serif;
-  --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);--nav-h:60px;
+const GOLD = “#c9a84c”;
+const GOLD_BRIGHT = “#e8c96a”;
+const GOLD_BORDER = “rgba(201,168,76,0.3)”;
+const GOLD_DIM = “rgba(201,168,76,0.15)”;
+const TEAL = “#00dcc8”;
+const BG = “#000000”;
+const BG2 = “#0a0a0a”;
+const BG3 = “#111111”;
+const TEXT = “#e8e0d0”;
+const TEXT_DIM = “#6b5f4a”;
+const TEXT_MID = “#9b8c70”;
+
+const VIAL_SIZE = 30;
+const DOSE_UNITS = 15;
+const KEY = “reta_protocol_v1”;
+
+const DAYS = [“Sun”,“Mon”,“Tue”,“Wed”,“Thu”,“Fri”,“Sat”];
+const MONTHS = [“Jan”,“Feb”,“Mar”,“Apr”,“May”,“Jun”,“Jul”,“Aug”,“Sep”,“Oct”,“Nov”,“Dec”];
+const MONTH_FULL = [“January”,“February”,“March”,“April”,“May”,“June”,“July”,“August”,“September”,“October”,“November”,“December”];
+
+function fmt12(d) {
+let h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? “PM” : “AM”;
+h = h % 12 || 12;
+return `${h}:${String(m).padStart(2,"0")} ${ap}`;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden;}
-#app{position:fixed;inset:0;display:flex;flex-direction:column;}
-
-/* TOP BAR */
-#top-bar{padding:calc(var(–safe-top)+12px) 20px 12px;background:var(–bg);border-bottom:1px solid var(–gold-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
-#top-bar::after{content:’’;position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold),transparent);}
-.top-bar-title{font-family:var(–display);font-size:22px;letter-spacing:3px;color:var(–gold-bright);}
-#live-clock{font-family:var(–mono);font-size:14px;color:var(–gold);letter-spacing:1px;}
-#live-date{font-family:var(–mono);font-size:10px;color:var(–text-dim);letter-spacing:1px;margin-top:1px;text-align:right;}
-
-/* PAGES */
-#pages{flex:1;overflow:hidden;position:relative;}
-.page{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px calc(var(–nav-h)+var(–safe-bottom)+20px);opacity:0;pointer-events:none;transition:opacity 0.2s;}
-.page.active{opacity:1;pointer-events:all;}
-
-/* BOTTOM NAV */
-#bottom-nav{position:relative;flex-shrink:0;height:calc(var(–nav-h)+var(–safe-bottom));padding-bottom:var(–safe-bottom);background:var(–bg2);border-top:1px solid var(–gold-border);display:flex;align-items:stretch;}
-#bottom-nav::before{content:’’;position:absolute;top:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold),transparent);}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;padding:8px 2px;-webkit-appearance:none;position:relative;transition:all 0.2s;}
-.nav-btn::after{content:’’;position:absolute;top:0;left:10%;right:10%;height:2px;background:var(–gold);border-radius:0 0 2px 2px;opacity:0;transition:opacity 0.2s;}
-.nav-btn.active::after{opacity:1;}
-.nav-icon{font-size:18px;filter:grayscale(1) brightness(0.4);transition:filter 0.2s;}
-.nav-label{font-family:var(–mono);font-size:7px;letter-spacing:0.5px;text-transform:uppercase;color:var(–text-dim);transition:color 0.2s;}
-.nav-btn.active .nav-icon{filter:none;}
-.nav-btn.active .nav-label{color:var(–gold);}
-
-/* COMMON */
-.sec-label{font-family:var(–mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(–gold);margin-bottom:14px;margin-top:4px;display:flex;align-items:center;gap:8px;}
-.sec-label::after{content:’’;flex:1;height:1px;background:linear-gradient(90deg,var(–gold-border),transparent);}
-.card{background:var(–bg2);border:1px solid var(–gold-border);border-radius:14px;padding:20px;margin-bottom:20px;position:relative;overflow:hidden;}
-.card::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold-dim),transparent);}
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
-.stat-row:last-child{border-bottom:none;}
-.stat-lbl{font-size:11px;color:var(–text-dim);font-family:var(–mono);}
-.stat-val{font-size:12px;color:var(–gold);font-family:var(–mono);}
-.prog-bar{height:3px;background:rgba(201,168,76,0.08);border-radius:2px;overflow:hidden;margin:3px 0 8px;}
-.prog-fill{height:100%;border-radius:2px;transition:width 0.5s;background:linear-gradient(90deg,#00dcc8,rgba(0,220,200,0.4));}
-
-/* HOME */
-.home-hero{text-align:center;padding:30px 0 24px;border-bottom:1px solid var(–gold-border);margin-bottom:24px;}
-.home-title{font-family:var(–display);font-size:42px;letter-spacing:6px;color:var(–gold-bright);line-height:1;}
-.home-sub{font-family:var(–mono);font-size:10px;letter-spacing:4px;color:var(–text-dim);margin-top:6px;text-transform:uppercase;}
-.status-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
-.status-pill{flex:1;min-width:60px;background:var(–bg2);border:1px solid var(–gold-border);border-radius:8px;padding:12px 10px;text-align:center;}
-.status-num{font-family:var(–display);font-size:24px;letter-spacing:1px;color:var(–gold-bright);}
-.status-lbl{font-family:var(–mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(–text-dim);margin-top:2px;}
-.next-card{background:var(–bg2);border:1px solid var(–gold-border);border-radius:12px;padding:18px;margin-bottom:20px;}
-.next-label{font-family:var(–mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–text-dim);margin-bottom:12px;}
-.next-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
-.next-row:last-child{border-bottom:none;}
-.next-pip{width:8px;height:8px;border-radius:50%;background:#00dcc8;flex-shrink:0;}
-.next-name{font-family:var(–sans);font-size:12px;font-weight:500;color:var(–text);flex:1;}
-.next-time{font-family:var(–mono);font-size:11px;color:var(–gold);}
-.next-cnt{font-family:var(–mono);font-size:10px;color:var(–text-dim);}
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.mini-card{background:var(–bg2);border:1px solid var(–gold-border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden;}
-.mini-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold-dim),transparent);}
-.mini-lbl{font-family:var(–mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–text-dim);margin-bottom:10px;}
-.mini-val{font-family:var(–display);font-size:32px;letter-spacing:2px;color:var(–gold-bright);}
-.mini-sub{font-family:var(–mono);font-size:10px;color:var(–text-mid);margin-top:4px;}
-
-/* CALENDAR */
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-title{font-family:var(–display);font-size:20px;letter-spacing:2px;color:var(–gold-bright);}
-.cal-nav{background:var(–bg3);border:1px solid var(–gold-border);border-radius:6px;color:var(–gold);font-size:14px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;transition:background 0.2s;}
-.cal-nav:hover{background:var(–gold-dim);}
-.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;}
-.cal-dow{font-family:var(–mono);font-size:8px;text-transform:uppercase;color:var(–text-dim);text-align:center;padding:4px 0;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-day{border-radius:6px;border:1px solid transparent;padding:4px 3px;background:var(–bg3);overflow:hidden;}
-.cal-day.today{border-color:var(–gold);box-shadow:0 0 10px rgba(201,168,76,0.15);}
-.cal-day.empty{background:transparent;border-color:transparent;}
-.cal-day.past{opacity:0.45;}
-.cal-day-num{font-family:var(–mono);font-size:9px;color:var(–text-dim);margin-bottom:3px;line-height:1;}
-.cal-day.today .cal-day-num{color:var(–gold);font-weight:700;}
-.cal-doses{display:flex;flex-direction:column;gap:2px;}
-.cal-pill{border-radius:3px;padding:2px 4px;font-family:var(–mono);font-size:8px;display:flex;align-items:center;gap:2px;line-height:1.2;white-space:nowrap;overflow:hidden;background:rgba(0,220,200,0.12);color:#00dcc8;border:1px solid rgba(0,220,200,0.25);}
-.cal-pill.missed{opacity:0.3;}
-.pill-lbl{overflow:hidden;text-overflow:ellipsis;}
-.cal-legend{display:flex;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(–gold-border);flex-wrap:wrap;}
-.cal-legend-item{display:flex;align-items:center;gap:5px;font-family:var(–mono);font-size:9px;color:var(–text-dim);}
-.cal-legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
-
-/* LOG BUTTON */
-.log-single{display:flex;border-radius:10px;overflow:hidden;border:1px solid var(–gold-border);margin-bottom:12px;}
-.log-btn-add{flex:1;background:#1a1500;color:#00dcc8;font-family:var(–mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:16px 12px;cursor:pointer;border:none;border-right:1px solid var(–gold-border);transition:background 0.15s,transform 0.1s;user-select:none;-webkit-appearance:none;}
-.log-btn-add:active{transform:scale(0.97);background:#2a2200;}
-.log-btn-sub{width:48px;flex-shrink:0;background:#0f0f0f;color:var(–text-dim);font-family:var(–mono);font-size:18px;cursor:pointer;border:none;transition:all 0.15s;user-select:none;-webkit-appearance:none;}
-.log-btn-sub:active{transform:scale(0.95);}
-.log-btn-sub:hover{background:#2a0f0f;color:#f87171;}
-.backdate-btn{width:100%;background:#0f0f0f;border:1px solid var(–gold-border);border-radius:8px;color:var(–text-dim);font-family:var(–mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:10px;cursor:pointer;-webkit-appearance:none;margin-top:4px;transition:all 0.2s;}
-.backdate-btn:hover{border-color:var(–gold);color:var(–gold);}
-
-/* DOSE LOG */
-.log-summary{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
-.lsum{background:var(–bg3);border:1px solid var(–gold-border);border-radius:8px;padding:8px 12px;text-align:center;flex:1;min-width:60px;}
-.lsum strong{display:block;font-family:var(–display);font-size:22px;color:#00dcc8;}
-.lsum span{font-family:var(–mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(–text-dim);}
-.dose-list{max-height:500px;overflow-y:auto;}
-.dlog-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
-.dlog-pip{width:8px;height:8px;border-radius:50%;background:#00dcc8;flex-shrink:0;}
-.dlog-name{font-family:var(–mono);font-size:9px;color:var(–text);min-width:80px;}
-.dlog-dt{font-family:var(–mono);font-size:9px;color:var(–text-dim);flex:1;}
-.dlog-dose{font-family:var(–mono);font-size:10px;color:var(–gold);min-width:28px;text-align:right;}
-.dlog-del{background:none;border:none;color:var(–text-dim);cursor:pointer;font-size:12px;padding:0 4px;-webkit-appearance:none;}
-.log-empty{font-family:var(–mono);font-size:11px;color:var(–text-dim);padding:16px 0;text-align:center;}
-
-/* VIAL */
-.vial-name{font-size:12px;font-weight:600;color:var(–text);margin-bottom:5px;display:flex;justify-content:space-between;}
-.vial-name span{font-family:var(–mono);font-size:10px;font-weight:400;color:var(–teal);}
-.vial-track{display:flex;gap:2px;flex-wrap:wrap;}
-.vial-unit{width:10px;height:14px;border-radius:2px;border:1px solid rgba(0,220,200,0.2);background:rgba(0,220,200,0.04);}
-.vial-unit.used{background:#00dcc8;border-color:#00dcc8;box-shadow:0 0 3px rgba(0,220,200,0.4);}
-.vial-sub{font-family:var(–mono);font-size:9px;color:var(–text-dim);margin-top:3px;}
-.reset-vial{background:#0f0f0f;border:1px solid var(–gold-border);border-radius:4px;color:var(–text-dim);font-family:var(–mono);font-size:9px;padding:3px 8px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;margin-top:5px;-webkit-appearance:none;}
-.reset-vial:hover{border-color:var(–gold);color:var(–gold);}
-
-/* ADHERENCE */
-.adh-ring-wrap{display:flex;justify-content:center;margin-bottom:14px;}
-.ring-container{position:relative;display:inline-block;}
-.adh-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
-.adh-pct{font-family:var(–display);font-size:22px;color:var(–gold-bright);line-height:1;}
-.adh-pct-lbl{font-size:8px;color:var(–text-dim);letter-spacing:1px;font-family:var(–mono);}
-.adh-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
-.adh-row:last-child{border-bottom:none;}
-.adh-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.adh-name{font-size:11px;color:var(–text);flex:1;font-family:var(–mono);}
-.adh-val{font-family:var(–mono);font-size:11px;color:var(–gold);}
-
-/* WEIGHT */
-.weight-input-lbl{font-family:var(–mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–text-dim);margin-bottom:8px;}
-.weight-input-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
-.weight-input{background:var(–bg3);border:1px solid var(–gold-border);border-radius:8px;color:var(–gold-bright);font-family:var(–mono);font-size:20px;padding:10px 14px;width:120px;outline:none;-moz-appearance:textfield;-webkit-appearance:none;}
-.weight-input::-webkit-outer-spin-button,.weight-input::-webkit-inner-spin-button{-webkit-appearance:none;}
-.weight-input:focus{border-color:var(–gold);}
-.unit-toggle{display:flex;background:var(–bg3);border:1px solid var(–gold-border);border-radius:8px;overflow:hidden;}
-.ut{background:none;border:none;color:var(–text-dim);font-family:var(–mono);font-size:11px;padding:8px 14px;cursor:pointer;transition:all 0.2s;-webkit-appearance:none;}
-.ut.active{background:var(–gold-dim);color:var(–gold);}
-.weight-log-btn{background:#1a1500;border:1px solid var(–gold-border);border-radius:8px;color:var(–gold);font-family:var(–mono);font-size:11px;padding:11px 20px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:background 0.2s;-webkit-appearance:none;width:100%;}
-.weight-log-btn:active{background:#2a2200;}
-.weight-stats{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap;}
-.wstat{flex:1;min-width:60px;text-align:center;}
-.wstat-val{font-family:var(–display);font-size:20px;letter-spacing:1px;color:var(–gold-bright);}
-.wstat-val.neg{color:#00dcc8;}.wstat-val.pos{color:#fb7185;}
-.wstat-lbl{font-family:var(–mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(–text-dim);margin-top:2px;}
-.weight-chart{width:100%;height:160px;margin:12px 0;}
-.weight-chart svg{width:100%;height:100%;}
-.weight-history{max-height:300px;overflow-y:auto;}
-.wlog-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
-.wlog-date{font-family:var(–mono);font-size:9px;color:var(–text-dim);flex:1;}
-.wlog-val{font-family:var(–mono);font-size:12px;color:var(–gold);}
-.wdelta{font-family:var(–mono);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:4px;}
-.wdelta.down{color:#00dcc8;background:rgba(0,220,200,0.08);}
-.wdelta.up{color:#fb7185;background:rgba(251,113,133,0.08);}
-.wlog-del{background:none;border:none;color:var(–text-dim);cursor:pointer;font-size:12px;padding:0 4px;-webkit-appearance:none;}
-
-/* PROTOCOL */
-.proto-item{background:var(–bg3);border-radius:10px;padding:14px;border:1px solid var(–gold-border);}
-.proto-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.08);}
-.proto-dot{width:10px;height:10px;border-radius:50%;background:#00dcc8;flex-shrink:0;}
-.proto-name{font-family:var(–sans);font-size:12px;font-weight:600;color:var(–text);}
-.proto-started{font-family:var(–mono);font-size:8px;color:var(–text-dim);margin-top:1px;}
-.proto-stat{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(201,168,76,0.04);}
-.proto-stat:last-of-type{border-bottom:none;}
-.proto-stat-lbl{font-family:var(–mono);font-size:9px;color:var(–text-dim);}
-.proto-stat-val{font-family:var(–mono);font-size:11px;color:var(–gold);}
-.proto-advice{margin-top:8px;padding:7px 9px;border-radius:6px;font-family:var(–mono);font-size:9px;line-height:1.5;}
-.proto-advice.due{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);color:#f5a623;}
-.proto-advice.soon{background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.25);color:#fb7185;}
-.proto-advice.stable{background:rgba(0,220,200,0.06);border:1px solid rgba(0,220,200,0.2);color:#00dcc8;}
-.proto-advice.new{background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);color:var(–text-dim);}
-
-/* INFO */
-.info-card{background:var(–bg2);border:1px solid var(–gold-border);border-radius:14px;padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
-.info-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold-dim),transparent);}
-.info-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.info-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(0,220,200,0.08);border:1px solid rgba(0,220,200,0.2);}
-.info-title{font-family:var(–sans);font-size:15px;font-weight:600;color:var(–text);}
-.info-subtitle{font-family:var(–mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(–text-dim);margin-top:2px;}
-.info-sec-title{font-family:var(–mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;color:#00dcc8;}
-.info-list{list-style:none;padding:0;margin-bottom:12px;}
-.info-list li{font-size:11px;color:var(–text-dim);padding:3px 0 3px 12px;position:relative;line-height:1.5;}
-.info-list li::before{content:‘▸’;position:absolute;left:0;color:#00dcc8;font-size:8px;top:5px;}
-.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
-.pc-title{font-family:var(–mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
-.pc-title.p{color:#00dcc8;}.pc-title.c{color:#fb7185;}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-.modal-overlay.show{opacity:1;pointer-events:all;}
-.modal{background:#111;border:1px solid var(–gold-border);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);position:relative;}
-.modal-overlay.show .modal{transform:translateY(0);}
-.modal::before{content:’’;position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(–gold-dim),transparent);border-radius:20px 20px 0 0;}
-.modal-handle{width:40px;height:4px;background:var(–gold-border);border-radius:2px;margin:0 auto 20px;}
-.modal-title{font-family:var(–display);font-size:20px;letter-spacing:2px;color:var(–gold-bright);margin-bottom:4px;}
-.modal-sub{font-family:var(–mono);font-size:10px;color:var(–text-dim);letter-spacing:1px;margin-bottom:18px;}
-.modal-dt-label{font-family:var(–mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–text-dim);margin-bottom:8px;}
-.modal-dt-input{background:#0f0f0f;border:1px solid var(–gold-border);border-radius:8px;color:var(–gold);font-family:var(–mono);font-size:14px;padding:12px 14px;width:100%;outline:none;-webkit-appearance:none;margin-bottom:16px;color-scheme:dark;}
-.modal-dt-input:focus{border-color:var(–gold);}
-.modal-confirm{width:100%;background:#1a1500;border:1px solid var(–gold);border-radius:10px;color:var(–gold-bright);font-family:var(–display);font-size:18px;letter-spacing:2px;padding:14px;cursor:pointer;-webkit-appearance:none;transition:background 0.2s;}
-.modal-confirm:active{background:#2a2200;}
-.modal-cancel{width:100%;background:none;border:none;color:var(–text-dim);font-family:var(–mono);font-size:11px;padding:10px;cursor:pointer;-webkit-appearance:none;margin-top:4px;letter-spacing:1px;}
-
-/* TOAST */
-.toast{position:fixed;bottom:calc(var(–nav-h)+var(–safe-bottom)+16px);left:50%;transform:translateX(-50%) translateY(20px);background:var(–bg3);border:1px solid var(–gold-border);border-radius:8px;padding:10px 22px;font-family:var(–mono);font-size:12px;color:var(–gold);letter-spacing:1px;opacity:0;transition:opacity 0.3s,transform 0.3s;z-index:100;pointer-events:none;white-space:nowrap;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-@media(max-width:700px){
-.cal-dow{font-size:7px;letter-spacing:0;}
-.cal-grid,.cal-dow-row{gap:2px;}
-.cal-day{padding:3px 2px;border-radius:5px;}
-.cal-day-num{font-size:8px;margin-bottom:2px;}
-.cal-pill{padding:1px 3px;font-size:7px;}
-.pill-lbl{display:none;}
+function fmtDay(d) { return `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
+function fmtFull(ts) {
+const d = new Date(ts);
+return `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${fmt12(d)}`;
 }
-</style>
+function fmtW(lbs, unit) {
+return unit === “kg” ? (lbs * 0.453592).toFixed(1) + “ kg” : lbs.toFixed(1) + “ lbs”;
+}
+function isRetaDay(dow) { return dow === 0 || dow === 3; }
+function retaHour(dow) { return dow === 0 ? 10 : 22; }
 
-</head>
-<body>
-<div id="app">
+function loadState() {
+try {
+const raw = localStorage.getItem(KEY);
+if (raw) return JSON.parse(raw);
+} catch(e) {}
+return { logs: [], retaUsed: 0, weightUnit: “lbs”, weights: [] };
+}
+function saveState(s) {
+try { localStorage.setItem(KEY, JSON.stringify(s)); } catch(e) {}
+}
 
-<!-- TOP BAR -->
+// ── Shared UI primitives ──────────────────────
+const s = {
+card: {
+background: BG2, border: `1px solid ${GOLD_BORDER}`, borderRadius: 14,
+padding: 20, marginBottom: 20, position: “relative”, overflow: “hidden”
+},
+secLabel: {
+fontFamily: “monospace”, fontSize: 9, letterSpacing: 3, textTransform: “uppercase”,
+color: GOLD, marginBottom: 14, marginTop: 4, display: “flex”, alignItems: “center”, gap: 8
+},
+statRow: {
+display: “flex”, justifyContent: “space-between”, alignItems: “center”,
+padding: “6px 0”, borderBottom: “1px solid rgba(201,168,76,0.06)”
+},
+mono: { fontFamily: “monospace” },
+btn: (bg = “#1a1500”, color = GOLD) => ({
+background: bg, border: `1px solid ${GOLD_BORDER}`, borderRadius: 8,
+color, fontFamily: “monospace”, fontSize: 11, padding: “11px 20px”,
+cursor: “pointer”, letterSpacing: 1, textTransform: “uppercase”,
+width: “100%”, WebkitAppearance: “none”, appearance: “none”
+})
+};
 
-<div id="top-bar">
-  <div style="display:flex;align-items:center;gap:10px;">
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#e8c96a"/><stop offset="100%" stop-color="#c9a84c"/>
-        </linearGradient>
-      </defs>
-      <path d="M10 2 C6 6 6 10 10 14 C14 18 14 22 10 26 C8 28 8 30 10 30" stroke="url(#g)" stroke-width="2" stroke-linecap="round" fill="none"/>
-      <path d="M22 2 C26 6 26 10 22 14 C18 18 18 22 22 26 C24 28 24 30 22 30" stroke="url(#g)" stroke-width="2" stroke-linecap="round" fill="none"/>
-      <line x1="10" y1="6" x2="22" y2="6" stroke="#e8c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-      <line x1="9" y1="10" x2="23" y2="10" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
-      <line x1="10" y1="14" x2="22" y2="14" stroke="#e8c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-      <line x1="13" y1="18" x2="19" y2="18" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
-      <line x1="10" y1="22" x2="22" y2="22" stroke="#e8c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-      <circle cx="10" cy="14" r="2" fill="#e8c96a" opacity="0.9"/>
-      <circle cx="22" cy="14" r="2" fill="#e8c96a" opacity="0.9"/>
-    </svg>
-    <div class="top-bar-title">PROTOCOL</div>
-  </div>
-  <div style="text-align:right;">
-    <div id="live-clock">--:-- --</div>
-    <div id="live-date">---</div>
-  </div>
+function SecLabel({ children }) {
+return (
+<div style={s.secLabel}>
+{children}
+<div style={{ flex: 1, height: 1, background: `linear-gradient(90deg,${GOLD_BORDER},transparent)` }} />
+</div>
+);
+}
+
+function Card({ children, style }) {
+return (
+<div style={{ …s.card, …style }}>
+<div style={{ position:“absolute”,top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD_DIM},transparent)` }} />
+{children}
+</div>
+);
+}
+
+// ── HOME PAGE ─────────────────────────────────
+function HomePage({ state }) {
+const now = Date.now();
+const W = state.weights;
+const curW = W.length ? W[W.length-1].lbs : null;
+const startW = W.length ? W[0].lbs : null;
+const delta = curW !== null && startW !== null ? curW - startW : null;
+const firstDose = state.logs.length ? state.logs[0].ts : null;
+const daysOn = firstDose ? Math.floor((now - firstDose) / 86400000) : 0;
+const som = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+const monthLogged = state.logs.filter(l => new Date(l.ts) >= som).length;
+
+// upcoming doses
+const upcoming = [];
+const nowD = new Date();
+for (let d = 0; d < 21 && upcoming.length < 3; d++) {
+const base = new Date(nowD); base.setDate(base.getDate() + d);
+const dow = base.getDay();
+if (isRetaDay(dow)) {
+const dt = new Date(base); dt.setHours(retaHour(dow), 0, 0, 0);
+if (dt > nowD) upcoming.push(dt);
+}
+}
+
+const statusPills = [
+{ num: daysOn, lbl: “Days On”, color: TEAL },
+{ num: state.logs.length, lbl: “Total Doses”, color: GOLD },
+…(curW ? [{ num: fmtW(curW, state.weightUnit), lbl: “Weight”, color: “#fb7185” }] : []),
+…(delta !== null ? [{ num: `${delta < 0 ? "↓" : "↑"}${Math.abs(delta).toFixed(1)}`, lbl: state.weightUnit, color: delta < 0 ? TEAL : “#fb7185” }] : [])
+];
+
+return (
+<div>
+{/* Hero */}
+<div style={{ textAlign:“center”, padding:“30px 0 24px”, borderBottom:`1px solid ${GOLD_BORDER}`, marginBottom:24 }}>
+<div style={{ fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:42, letterSpacing:6, color:GOLD_BRIGHT, lineHeight:1 }}>
+RETATRUTIDE<br/>PROTOCOL
+</div>
+<div style={{ fontFamily:“monospace”, fontSize:10, letterSpacing:4, color:TEXT_DIM, marginTop:6, textTransform:“uppercase” }}>
+Personal Dosing Dashboard · Active
+</div>
 </div>
 
-<!-- PAGES -->
-
-<div id="pages">
-
-  <!-- PAGE 0: HOME -->
-
-  <div class="page active" id="page-home">
-    <div class="home-hero">
-      <div class="home-title">RETATRUTIDE<br>PROTOCOL</div>
-      <div class="home-sub">Personal Dosing Dashboard · Active</div>
-    </div>
-    <div class="status-row" id="home-status"></div>
-    <div class="next-card">
-      <div class="next-label">/ Up Next /</div>
-      <div id="home-next"></div>
-    </div>
-    <div class="mini-grid" id="home-mini"></div>
-  </div>
-
-  <!-- PAGE 1: SCHEDULE + LOG -->
-
-  <div class="page" id="page-schedule">
-    <div class="sec-label">Schedule</div>
-    <div class="card" style="padding:14px;">
-      <div class="cal-header">
-        <button class="cal-nav" onclick="calPrev()">‹</button>
-        <div class="cal-title" id="cal-title"></div>
-        <button class="cal-nav" onclick="calNext()">›</button>
+```
+  {/* Status pills */}
+  <div style={{ display:"flex", gap:8, marginBottom:20, flexWrap:"wrap" }}>
+    {statusPills.map((p, i) => (
+      <div key={i} style={{ flex:1, minWidth:60, background:BG2, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, padding:"12px 10px", textAlign:"center" }}>
+        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:24, letterSpacing:1, color:p.color }}>{p.num}</div>
+        <div style={{ fontFamily:"monospace", fontSize:8, letterSpacing:1, textTransform:"uppercase", color:TEXT_DIM, marginTop:2 }}>{p.lbl}</div>
       </div>
-      <div class="cal-dow-row">
-        <div class="cal-dow">Su</div><div class="cal-dow">Mo</div><div class="cal-dow">Tu</div>
-        <div class="cal-dow">We</div><div class="cal-dow">Th</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-      <div class="cal-legend">
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(0,220,200,0.6)"></div>Reta · Sun 10AM &amp; Wed 10PM</div>
-        <div class="cal-legend-item"><span style="font-size:10px;color:var(--gold)">✓</span> Logged</div>
-      </div>
-    </div>
-    <div class="sec-label">Log Dose</div>
-    <div class="log-single">
-      <button class="log-btn-add" onclick="logDose()">⊕ &nbsp;LOG RETATRUTIDE</button>
-      <button class="log-btn-sub" onclick="subtractDose()">−</button>
-    </div>
-    <button class="backdate-btn" onclick="openBackdate()">⊕ Log Missed / Backdated Dose</button>
+    ))}
   </div>
 
-  <!-- PAGE 2: DOSE LOG -->
-
-  <div class="page" id="page-log">
-    <div class="sec-label">Dose Log</div>
-    <div class="card">
-      <div class="log-summary" id="log-summary"></div>
-      <div class="dose-list" id="dose-list"></div>
-    </div>
-  </div>
-
-  <!-- PAGE 3: MONTHLY STATS -->
-
-  <div class="page" id="page-stats">
-    <div class="sec-label">Monthly Stats</div>
-    <div class="card"><div id="monthly-stats"></div></div>
-  </div>
-
-  <!-- PAGE 4: VIAL + ADHERENCE -->
-
-  <div class="page" id="page-vials">
-    <div class="sec-label">Active Vial</div>
-    <div class="card" id="vials-content"></div>
-    <div class="sec-label">Adherence</div>
-    <div class="card" id="adherence-content"></div>
-  </div>
-
-  <!-- PAGE 5: WEIGHT LOG -->
-
-  <div class="page" id="page-weight">
-    <div class="sec-label">Weight Log</div>
-    <div class="card">
-      <div class="weight-input-lbl">Log Today's Weight</div>
-      <div class="weight-input-row">
-        <input class="weight-input" type="number" id="weight-input" placeholder="0.0" step="0.1" min="50" max="700" inputmode="decimal">
-        <div class="unit-toggle">
-          <button class="ut active" id="unit-lbs" onclick="setUnit('lbs')">lbs</button>
-          <button class="ut" id="unit-kg" onclick="setUnit('kg')">kg</button>
+  {/* Up Next */}
+  <div style={{ background:BG2, border:`1px solid ${GOLD_BORDER}`, borderRadius:12, padding:18, marginBottom:20 }}>
+    <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:2, textTransform:"uppercase", color:TEXT_DIM, marginBottom:12 }}>/ Up Next /</div>
+    {upcoming.length ? upcoming.map((dt, i) => {
+      const ms = dt - now, h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+      const cnt = h > 23 ? `in ${Math.floor(h/24)}d ${h%24}h` : `in ${h}h ${m}m`;
+      return (
+        <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 0", borderBottom: i < upcoming.length-1 ? "1px solid rgba(201,168,76,0.06)" : "none" }}>
+          <div style={{ width:8, height:8, borderRadius:"50%", background:TEAL, flexShrink:0 }} />
+          <span style={{ fontFamily:"sans-serif", fontSize:12, fontWeight:500, color:TEXT, flex:1 }}>Retatrutide</span>
+          <span style={{ fontFamily:"monospace", fontSize:11, color:GOLD }}>{fmt12(dt)}</span>
+          <span style={{ fontFamily:"monospace", fontSize:10, color:TEXT_DIM }}>{cnt}</span>
         </div>
-      </div>
-      <button class="weight-log-btn" onclick="logWeight()">⊕ Log Weight</button>
-      <div class="weight-stats">
-        <div class="wstat"><div class="wstat-val" id="ws-cur">—</div><div class="wstat-lbl">Current</div></div>
-        <div class="wstat"><div class="wstat-val" id="ws-start">—</div><div class="wstat-lbl">Starting</div></div>
-        <div class="wstat"><div class="wstat-val" id="ws-delta">—</div><div class="wstat-lbl">Total Δ</div></div>
-        <div class="wstat"><div class="wstat-val" id="ws-low">—</div><div class="wstat-lbl">Lowest</div></div>
-      </div>
-      <div class="weight-chart"><svg id="weight-svg" preserveAspectRatio="none"></svg></div>
-      <div class="weight-history" id="weight-history"></div>
-    </div>
+      );
+    }) : <div style={{ fontFamily:"monospace", fontSize:11, color:TEXT_DIM, padding:"8px 0" }}>No upcoming doses in window.</div>}
   </div>
 
-  <!-- PAGE 6: PROTOCOL -->
-
-  <div class="page" id="page-protocol">
-    <div class="sec-label">Protocol Status</div>
-    <div class="card" id="protocol-card"></div>
-    <div class="sec-label">Titration Guide</div>
-    <div class="card">
-      <div class="stat-row"><span class="stat-lbl">Week 1–2</span><span class="stat-val" style="color:#00dcc8">Starting dose · monitor tolerance</span></div>
-      <div class="stat-row"><span class="stat-lbl">Week 2–4</span><span class="stat-val" style="color:#00dcc8">Assess response · stay at dose</span></div>
-      <div class="stat-row"><span class="stat-lbl">Week 4–8</span><span class="stat-val" style="color:#f5a623">Titrate up if plateau reached</span></div>
-      <div class="stat-row"><span class="stat-lbl">Week 8+</span><span class="stat-val" style="color:#fb7185">Evaluate next dose increase</span></div>
-      <div class="stat-row"><span class="stat-lbl">Off-cycle</span><span class="stat-val">Goal-dependent</span></div>
-    </div>
-    <div class="sec-label">Peptide Reference</div>
-    <div class="info-card">
-      <div class="info-header">
-        <div class="info-icon">🔬</div>
-        <div><div class="info-title">Retatrutide</div><div class="info-subtitle">GIP / GLP-1 / GLUCAGON AGONIST</div></div>
+  {/* Mini stats */}
+  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+    {[
+      { lbl:"This Month", val:monthLogged, sub:"doses logged", color:GOLD_BRIGHT },
+      { lbl:"Weight Lost", val:delta !== null ? Math.abs(delta).toFixed(1) : "—", sub:`${state.weightUnit} since start`, color:TEAL }
+    ].map((c, i) => (
+      <div key={i} style={{ background:BG2, border:`1px solid ${GOLD_BORDER}`, borderRadius:12, padding:"18px 16px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD_DIM},transparent)` }} />
+        <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:2, textTransform:"uppercase", color:TEXT_DIM, marginBottom:10 }}>{c.lbl}</div>
+        <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:32, letterSpacing:2, color:c.color }}>{c.val}</div>
+        <div style={{ fontFamily:"monospace", fontSize:10, color:TEXT_MID, marginTop:4 }}>{c.sub}</div>
       </div>
-      <div class="info-sec-title">Benefits</div>
-      <ul class="info-list">
-        <li>Significant body weight reduction via triple receptor action</li>
-        <li>Improved insulin sensitivity and glycemic control</li>
-        <li>Reduction in visceral and hepatic fat</li>
-        <li>Potential cardiovascular risk reduction</li>
-        <li>Appetite suppression and improved satiety</li>
-        <li>Possible muscle preservation during fat loss</li>
-      </ul>
-      <div class="pc-grid">
-        <div>
-          <div class="pc-title p">PROS</div>
-          <ul class="info-list">
-            <li>Most potent weight-loss peptide class</li>
-            <li>Twice-weekly schedule</li>
-            <li>Multi-pathway metabolic action</li>
-          </ul>
-        </div>
-        <div>
-          <div class="pc-title c">CONS</div>
-          <ul class="info-list">
-            <li>GI side effects possible</li>
-            <li>Still in clinical development</li>
-            <li>Careful titration required</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /pages -->
-
-<!-- BOTTOM NAV -->
-
-<div id="bottom-nav">
-  <button class="nav-btn active" id="nav-home"     onclick="goTo(0)"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></button>
-  <button class="nav-btn"        id="nav-schedule" onclick="goTo(1)"><span class="nav-icon">📅</span><span class="nav-label">Schedule</span></button>
-  <button class="nav-btn"        id="nav-log"      onclick="goTo(2)"><span class="nav-icon">📋</span><span class="nav-label">Log</span></button>
-  <button class="nav-btn"        id="nav-stats"    onclick="goTo(3)"><span class="nav-icon">📊</span><span class="nav-label">Stats</span></button>
-  <button class="nav-btn"        id="nav-vials"    onclick="goTo(4)"><span class="nav-icon">💉</span><span class="nav-label">Vials</span></button>
-  <button class="nav-btn"        id="nav-weight"   onclick="goTo(5)"><span class="nav-icon">⚖️</span><span class="nav-label">Weight</span></button>
-  <button class="nav-btn"        id="nav-protocol" onclick="goTo(6)"><span class="nav-icon">🗓</span><span class="nav-label">Protocol</span></button>
-</div>
-
-</div><!-- /app -->
-
-<!-- BACKDATE MODAL -->
-
-<div class="modal-overlay" id="backdate-overlay" onclick="closeBackdate(event)">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">LOG MISSED DOSE</div>
-    <div class="modal-sub">Enter the date &amp; time you actually dosed</div>
-    <div class="modal-dt-label">Date &amp; Time Taken</div>
-    <input class="modal-dt-input" type="datetime-local" id="backdate-dt">
-    <button class="modal-confirm" onclick="confirmBackdate()">LOG DOSE</button>
-    <button class="modal-cancel" onclick="closeBackdate()">Cancel</button>
+    ))}
   </div>
 </div>
+```
 
-<div class="toast" id="toast"></div>
-
-<script>
-// ── NAV ───────────────────────────────────────
-const PAGE_IDS=['page-home','page-schedule','page-log','page-stats','page-vials','page-weight','page-protocol'];
-const NAV_IDS=['nav-home','nav-schedule','nav-log','nav-stats','nav-vials','nav-weight','nav-protocol'];
-let cur=0;
-function goTo(i){
-  document.getElementById(PAGE_IDS[cur]).classList.remove('active');
-  document.getElementById(NAV_IDS[cur]).classList.remove('active');
-  cur=i;
-  document.getElementById(PAGE_IDS[i]).classList.add('active');
-  document.getElementById(NAV_IDS[i]).classList.add('active');
-  document.getElementById(PAGE_IDS[i]).scrollTop=0;
-  if(i===0)renderHome();
-}
-
-// ── STATE — clean start, no seed data ─────────
-const KEY='reta_protocol_v1';
-let S=JSON.parse(localStorage.getItem(KEY)||'null')||{logs:[],retaUsed:0,weightUnit:'lbs',weights:[]};
-const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
-
-// ── CONFIG ────────────────────────────────────
-const VIAL_SIZE=30, DOSE_UNITS=15;
-
-// ── SCHEDULE: Sun (dow 0) @ 10AM, Wed (dow 3) @ 10PM ──
-function isRetaDay(dow){return dow===0||dow===3;}
-function retaHour(dow){return dow===0?10:22;}
-function upcoming(n=4){
-  const events=[],now=new Date();
-  for(let d=0;d<21;d++){
-    const base=new Date(now);base.setDate(base.getDate()+d);
-    const dow=base.getDay();
-    if(isRetaDay(dow)){
-      const dt=hm(base,retaHour(dow),0);
-      if(dt>now)events.push(dt);
-    }
-  }
-  return events.slice(0,n);
-}
-function hm(d,h,m){const x=new Date(d);x.setHours(h,m,0,0);return x;}
-
-// ── FORMAT ────────────────────────────────────
-const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmt12(d){let h=d.getHours(),m=d.getMinutes(),ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${String(m).padStart(2,'0')} ${ap}`;}
-function fmtDay(d){return `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}`;}
-function fmtFull(ts){const d=new Date(ts);return `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${fmt12(d)}`;}
-function fmtW(lbs){return S.weightUnit==='kg'?(lbs*0.453592).toFixed(1)+' kg':lbs.toFixed(1)+' lbs';}
-
-// ── HOME ──────────────────────────────────────
-function renderHome(){
-  const now=Date.now();
-  const W=S.weights,cur_w=W.length?W[W.length-1].lbs:null,start_w=W.length?W[0].lbs:null;
-  const delta=cur_w!==null&&start_w!==null?cur_w-start_w:null;
-  const firstDose=S.logs.length?S.logs[0].ts:null;
-  const daysOn=firstDose?Math.floor((now-firstDose)/86400000):0;
-  const som=new Date(new Date().getFullYear(),new Date().getMonth(),1);
-  const monthLogged=S.logs.filter(l=>new Date(l.ts)>=som).length;
-
-  document.getElementById('home-status').innerHTML=`
-    <div class="status-pill"><div class="status-num" style="color:#00dcc8">${daysOn}</div><div class="status-lbl">Days On</div></div>
-    <div class="status-pill"><div class="status-num" style="color:var(--gold)">${S.logs.length}</div><div class="status-lbl">Total Doses</div></div>
-    <div class="status-pill"><div class="status-num" style="color:#fb7185">${cur_w?fmtW(cur_w):'—'}</div><div class="status-lbl">Weight</div></div>
-    ${delta!==null?`<div class="status-pill"><div class="status-num" style="color:${delta<0?'#00dcc8':'#fb7185'}">${delta<0?'↓':'↑'}${Math.abs(delta).toFixed(1)}</div><div class="status-lbl">${S.weightUnit}</div></div>`:''}`;
-
-  const up=upcoming(3);
-  document.getElementById('home-next').innerHTML=up.length?up.map(dt=>{
-    const ms=dt-now,h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
-    const cntStr=h>23?`in ${Math.floor(h/24)}d ${h%24}h`:`in ${h}h ${m}m`;
-    return `<div class="next-row"><div class="next-pip"></div><span class="next-name">Retatrutide</span><span class="next-time">${fmt12(dt)}</span><span class="next-cnt">${cntStr}</span></div>`;
-  }).join(''):`<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:8px 0">No upcoming doses in range.</div>`;
-
-  document.getElementById('home-mini').innerHTML=`
-    <div class="mini-card"><div class="mini-lbl">This Month</div><div class="mini-val">${monthLogged}</div><div class="mini-sub">doses logged</div></div>
-    <div class="mini-card"><div class="mini-lbl">Weight Lost</div><div class="mini-val" style="color:#00dcc8">${delta!==null?Math.abs(delta).toFixed(1):'—'}</div><div class="mini-sub">${S.weightUnit} since start</div></div>`;
+);
 }
 
 // ── CALENDAR ──────────────────────────────────
-let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
-function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
-function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
-function isLogged(y,m,d){
-  const s=new Date(y,m,d,0,0,0).getTime(),e=new Date(y,m,d,23,59,59).getTime();
-  return S.logs.some(l=>l.ts>=s&&l.ts<=e);
-}
-function renderCalendar(){
-  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('cal-title').textContent=`${MN[calMonth]} ${calYear}`;
-  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-  const firstDow=new Date(calYear,calMonth,1).getDay(),daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  let html='';
-  for(let i=0;i<firstDow;i++)html+=`<div class="cal-day empty"></div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const thisDay=new Date(calYear,calMonth,d),dow=thisDay.getDay();
-    const isToday=thisDay.getTime()===today.getTime(),isPast=thisDay<today;
-    let cls='cal-day';if(isToday)cls+=' today';else if(isPast)cls+=' past';
-    let pill='';
-    if(isRetaDay(dow)){
-      const logged=isLogged(calYear,calMonth,d);
-      const doseTs=new Date(calYear,calMonth,d,retaHour(dow),0).getTime();
-      const pastDose=doseTs<now.getTime();
-      const icon=logged?'✓':'·';
-      const timeStr=dow===0?'10A':'10P';
-      pill=`<div class="cal-pill${(!logged&&pastDose)?' missed':''}"><span>${icon}</span><span class="pill-lbl"> R</span><span>${timeStr}</span></div>`;
-    }
-    html+=`<div class="${cls}"><div class="cal-day-num">${d}</div><div class="cal-doses">${pill}</div></div>`;
-  }
-  document.getElementById('cal-grid').innerHTML=html;
+function CalendarPage({ state, onLog, onSubtract, onBackdate }) {
+const [calYear, setCalYear] = useState(new Date().getFullYear());
+const [calMonth, setCalMonth] = useState(new Date().getMonth());
+
+function prev() { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y-1); } else setCalMonth(m => m-1); }
+function next() { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y+1); } else setCalMonth(m => m+1); }
+
+function isLogged(y, m, d) {
+const start = new Date(y,m,d,0,0,0).getTime(), end = new Date(y,m,d,23,59,59).getTime();
+return state.logs.some(l => l.ts >= start && l.ts <= end);
 }
 
-// ── MONTHLY STATS ─────────────────────────────
-function renderMonthlyStats(){
-  const now=new Date(),y=now.getFullYear(),mo=now.getMonth();
-  const eom=new Date(y,mo+1,0),som=new Date(y,mo,1);
-  let scheduled=0,remaining=0;
-  for(let d=1;d<=eom.getDate();d++){
-    const dow=new Date(y,mo,d).getDay();
-    if(!isRetaDay(dow))continue;
-    scheduled++;
-    if(new Date(y,mo,d,retaHour(dow),0).getTime()>now.getTime())remaining++;
-  }
-  const logged=S.logs.filter(l=>new Date(l.ts)>=som).length;
-  const pct=scheduled>0?Math.min(100,Math.round(logged/scheduled*100)):0;
-  document.getElementById('monthly-stats').innerHTML=`
-    <div class="stat-row"><span class="stat-lbl">Doses logged</span><span class="stat-val">${logged}/${scheduled} <span style="color:var(--text-dim);font-size:9px">(${remaining} left)</span></span></div>
-    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-    <div class="stat-row"><span class="stat-lbl">Monthly adherence</span><span class="stat-val">${pct}%</span></div>
-    <div class="stat-row"><span class="stat-lbl">Days remaining</span><span class="stat-val" style="color:var(--gold-bright)">${eom.getDate()-now.getDate()}</span></div>
-    <div class="stat-row"><span class="stat-lbl">All-time doses</span><span class="stat-val">${S.logs.length}</span></div>
-    <div class="stat-row"><span class="stat-lbl">Total mg dosed</span><span class="stat-val">${(S.logs.length*DOSE_UNITS/1000).toFixed(2)} mg</span></div>`;
+const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const firstDow = new Date(calYear, calMonth, 1).getDay();
+const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+const cells = [];
+for (let i = 0; i < firstDow; i++) cells.push(<div key={`e${i}`} />);
+for (let d = 1; d <= daysInMonth; d++) {
+const thisDay = new Date(calYear, calMonth, d);
+const dow = thisDay.getDay();
+const isToday = thisDay.getTime() === today.getTime();
+const isPast = thisDay < today;
+const logged = isRetaDay(dow) ? isLogged(calYear, calMonth, d) : false;
+const doseTs = isRetaDay(dow) ? new Date(calYear, calMonth, d, retaHour(dow), 0).getTime() : null;
+const isPastDose = doseTs && doseTs < now.getTime();
+
+```
+cells.push(
+  <div key={d} style={{
+    borderRadius:6, border:`1px solid ${isToday ? GOLD : "transparent"}`,
+    padding:"4px 3px", background:BG3, overflow:"hidden", opacity: isPast && !isToday ? 0.5 : 1,
+    boxShadow: isToday ? "0 0 10px rgba(201,168,76,0.15)" : "none"
+  }}>
+    <div style={{ fontFamily:"monospace", fontSize:9, color: isToday ? GOLD : TEXT_DIM, marginBottom:3, fontWeight: isToday ? 700 : 400 }}>{d}</div>
+    {isRetaDay(dow) && (
+      <div style={{
+        borderRadius:3, padding:"2px 3px", fontFamily:"monospace", fontSize:7,
+        display:"flex", alignItems:"center", gap:2, lineHeight:1.2,
+        background:"rgba(0,220,200,0.12)", color:TEAL,
+        border:"1px solid rgba(0,220,200,0.25)",
+        opacity: !logged && isPastDose ? 0.3 : 1
+      }}>
+        <span>{logged ? "✓" : "·"}</span>
+        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+          {dow === 0 ? "10A" : "10P"}
+        </span>
+      </div>
+    )}
+  </div>
+);
+```
+
 }
 
-// ── VIALS ─────────────────────────────────────
-function renderVials(){
-  const used=S.retaUsed%VIAL_SIZE,left=VIAL_SIZE-used;
-  const units=Array.from({length:VIAL_SIZE},(_,i)=>`<div class="vial-unit${i<used?' used':''}"></div>`).join('');
-  document.getElementById('vials-content').innerHTML=`
-    <div class="vial-name">Retatrutide <span>${left} units left</span></div>
-    <div class="vial-track">${units}</div>
-    <div class="vial-sub">${used}/${VIAL_SIZE} · ${DOSE_UNITS} units per dose</div>
-    <button class="reset-vial" onclick="resetVial()">New Vial</button>`;
+return (
+<div>
+<SecLabel>Schedule</SecLabel>
+<Card style={{ padding:14 }}>
+<div style={{ display:“flex”, alignItems:“center”, justifyContent:“space-between”, marginBottom:14 }}>
+<button onClick={prev} style={{ background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:6, color:GOLD, fontSize:14, width:32, height:32, cursor:“pointer”, display:“flex”, alignItems:“center”, justifyContent:“center” }}>‹</button>
+<div style={{ fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:20, letterSpacing:2, color:GOLD_BRIGHT }}>{MONTH_FULL[calMonth]} {calYear}</div>
+<button onClick={next} style={{ background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:6, color:GOLD, fontSize:14, width:32, height:32, cursor:“pointer”, display:“flex”, alignItems:“center”, justifyContent:“center” }}>›</button>
+</div>
+<div style={{ display:“grid”, gridTemplateColumns:“repeat(7,1fr)”, gap:3, marginBottom:3 }}>
+{[“Su”,“Mo”,“Tu”,“We”,“Th”,“Fr”,“Sa”].map(d => (
+<div key={d} style={{ fontFamily:“monospace”, fontSize:8, textTransform:“uppercase”, color:TEXT_DIM, textAlign:“center”, padding:“4px 0” }}>{d}</div>
+))}
+</div>
+<div style={{ display:“grid”, gridTemplateColumns:“repeat(7,1fr)”, gap:3 }}>{cells}</div>
+<div style={{ display:“flex”, gap:10, marginTop:14, paddingTop:12, borderTop:`1px solid ${GOLD_BORDER}`, flexWrap:“wrap” }}>
+<div style={{ display:“flex”, alignItems:“center”, gap:5, fontFamily:“monospace”, fontSize:9, color:TEXT_DIM }}>
+<div style={{ width:8, height:8, borderRadius:2, background:“rgba(0,220,200,0.6)” }} />
+Reta · Sun 10AM & Wed 10PM
+</div>
+<div style={{ display:“flex”, alignItems:“center”, gap:5, fontFamily:“monospace”, fontSize:9, color:TEXT_DIM }}>
+<span style={{ fontSize:10, color:GOLD }}>✓</span> Logged
+</div>
+</div>
+</Card>
+
+```
+  <SecLabel>Log Dose</SecLabel>
+  <div style={{ display:"flex", borderRadius:10, overflow:"hidden", border:`1px solid ${GOLD_BORDER}`, marginBottom:12 }}>
+    <button onClick={onLog} style={{ flex:1, background:"#1a1500", color:TEAL, fontFamily:"monospace", fontSize:12, letterSpacing:2, textTransform:"uppercase", padding:"16px 12px", cursor:"pointer", border:"none", borderRight:`1px solid ${GOLD_BORDER}` }}>
+      ⊕ &nbsp;LOG RETATRUTIDE
+    </button>
+    <button onClick={onSubtract} style={{ width:48, background:BG3, color:TEXT_DIM, fontFamily:"monospace", fontSize:18, cursor:"pointer", border:"none" }}>−</button>
+  </div>
+  <button onClick={onBackdate} style={{ width:"100%", background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, color:TEXT_DIM, fontFamily:"monospace", fontSize:10, letterSpacing:"1.5px", textTransform:"uppercase", padding:10, cursor:"pointer" }}>
+    ⊕ Log Missed / Backdated Dose
+  </button>
+</div>
+```
+
+);
 }
 
-// ── ADHERENCE ─────────────────────────────────
-function renderAdherence(){
-  const now=new Date(),som=new Date(now.getFullYear(),now.getMonth(),1);
-  // Count scheduled doses so far this month
-  let pastSched=0;
-  for(let d=1;d<=now.getDate();d++){
-    const dt=new Date(now.getFullYear(),now.getMonth(),d);
-    if(!isRetaDay(dt.getDay()))continue;
-    const doseTs=new Date(now.getFullYear(),now.getMonth(),d,retaHour(dt.getDay()),0).getTime();
-    if(doseTs<=now.getTime())pastSched++;
-  }
-  const logged=Math.min(S.logs.filter(l=>new Date(l.ts)>=som).length,pastSched);
-  const pct=pastSched>0?Math.round(logged/pastSched*100):100;
-  const C=2*Math.PI*42,fill=(pct/100)*C;
-  document.getElementById('adherence-content').innerHTML=`
-    <div class="adh-ring-wrap"><div class="ring-container">
-      <svg width="90" height="90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(201,168,76,0.08)" stroke-width="8"/>
-        <circle cx="50" cy="50" r="42" fill="none" stroke="#c9a84c" stroke-width="8" stroke-dasharray="${fill} ${C}" stroke-dashoffset="${C*0.25}" stroke-linecap="round"/>
-      </svg>
-      <div class="adh-center"><div class="adh-pct">${pct}%</div><div class="adh-pct-lbl">this month</div></div>
-    </div></div>
-    <div class="adh-row"><div class="adh-dot" style="background:#00dcc8"></div><span class="adh-name">Retatrutide</span><span class="adh-val">${pct}%</span></div>
-    <div class="adh-row"><div class="adh-dot" style="background:rgba(255,255,255,0.1)"></div><span class="adh-name">All-time doses</span><span class="adh-val" style="color:var(--text-dim)">${S.logs.length}</span></div>`;
+// ── DOSE LOG PAGE ─────────────────────────────
+function LogPage({ state, onDelete }) {
+const som = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+const monthCount = state.logs.filter(l => new Date(l.ts) >= som).length;
+const totalMg = (state.logs.length * DOSE_UNITS / 1000).toFixed(2);
+
+return (
+<div>
+<SecLabel>Dose Log</SecLabel>
+<Card>
+<div style={{ display:“flex”, gap:8, marginBottom:14, flexWrap:“wrap” }}>
+{[
+{ val: state.logs.length, lbl:“Total” },
+{ val: monthCount, lbl:“This Month” },
+{ val: totalMg, lbl:“mg Total” }
+].map((item, i) => (
+<div key={i} style={{ background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, padding:“8px 12px”, textAlign:“center”, flex:1, minWidth:60 }}>
+<div style={{ fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:22, color:TEAL }}>{item.val}</div>
+<div style={{ fontFamily:“monospace”, fontSize:8, letterSpacing:1, textTransform:“uppercase”, color:TEXT_DIM }}>{item.lbl}</div>
+</div>
+))}
+</div>
+{!state.logs.length
+? <div style={{ fontFamily:“monospace”, fontSize:11, color:TEXT_DIM, padding:“16px 0”, textAlign:“center” }}>No doses logged yet.</div>
+: […state.logs].reverse().map((l, ri) => {
+const realIdx = state.logs.length - 1 - ri;
+return (
+<div key={ri} style={{ display:“flex”, alignItems:“center”, gap:8, padding:“8px 0”, borderBottom:“1px solid rgba(201,168,76,0.06)” }}>
+<div style={{ width:8, height:8, borderRadius:“50%”, background:TEAL, flexShrink:0 }} />
+<span style={{ fontFamily:“monospace”, fontSize:9, color:TEXT, minWidth:80 }}>Retatrutide</span>
+<span style={{ fontFamily:“monospace”, fontSize:9, color:TEXT_DIM, flex:1 }}>{fmtFull(l.ts)}</span>
+<span style={{ fontFamily:“monospace”, fontSize:10, color:GOLD, minWidth:28, textAlign:“right” }}>{DOSE_UNITS}u</span>
+<button onClick={() => onDelete(realIdx)} style={{ background:“none”, border:“none”, color:TEXT_DIM, cursor:“pointer”, fontSize:12, padding:“0 4px” }}>✕</button>
+</div>
+);
+})
+}
+</Card>
+</div>
+);
 }
 
-// ── DOSE LOG ──────────────────────────────────
-function renderDoseLog(){
-  document.getElementById('log-summary').innerHTML=`
-    <div class="lsum"><strong>${S.logs.length}</strong><span>Total</span></div>
-    <div class="lsum"><strong>${S.logs.filter(l=>new Date(l.ts)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length}</strong><span>This Month</span></div>
-    <div class="lsum"><strong>${(S.logs.length*DOSE_UNITS/1000).toFixed(2)}</strong><span>mg Total</span></div>`;
-  const el=document.getElementById('dose-list');
-  if(!S.logs.length){el.innerHTML=`<div class="log-empty">No doses logged yet.</div>`;return;}
-  el.innerHTML=[...S.logs].reverse().map((l,ri)=>{
-    const realIdx=S.logs.length-1-ri;
-    return `<div class="dlog-row">
-      <div class="dlog-pip"></div>
-      <span class="dlog-name">Retatrutide</span>
-      <span class="dlog-dt">${fmtFull(l.ts)}</span>
-      <span class="dlog-dose">${DOSE_UNITS}u</span>
-      <button class="dlog-del" onclick="delLog(${realIdx})">✕</button>
-    </div>`;
-  }).join('');
+// ── STATS PAGE ────────────────────────────────
+function StatsPage({ state }) {
+const now = new Date();
+const y = now.getFullYear(), mo = now.getMonth();
+const eom = new Date(y, mo+1, 0), som = new Date(y, mo, 1);
+let scheduled = 0, remaining = 0;
+for (let d = 1; d <= eom.getDate(); d++) {
+const dow = new Date(y, mo, d).getDay();
+if (!isRetaDay(dow)) continue;
+scheduled++;
+if (new Date(y, mo, d, retaHour(dow), 0).getTime() > now.getTime()) remaining++;
 }
-function delLog(i){
-  S.logs.splice(i,1);S.retaUsed=Math.max(0,S.retaUsed-1);
-  save();renderAll();toast('Entry removed');
+const logged = state.logs.filter(l => new Date(l.ts) >= som).length;
+const pct = scheduled > 0 ? Math.min(100, Math.round(logged / scheduled * 100)) : 0;
+
+return (
+<div>
+<SecLabel>Monthly Stats</SecLabel>
+<Card>
+{[
+{ lbl:“Doses logged”, val:`${logged}/${scheduled}`, sub:`(${remaining} left)` },
+{ lbl:“Monthly adherence”, val:`${pct}%` },
+{ lbl:“Days remaining”, val:`${eom.getDate() - now.getDate()}`, color:GOLD_BRIGHT },
+{ lbl:“All-time doses”, val:`${state.logs.length}` },
+{ lbl:“Total mg administered”, val:`${(state.logs.length * DOSE_UNITS / 1000).toFixed(2)} mg` }
+].map((row, i, arr) => (
+<div key={i} style={{ …s.statRow, borderBottom: i < arr.length-1 ? “1px solid rgba(201,168,76,0.06)” : “none” }}>
+<span style={{ fontFamily:“monospace”, fontSize:11, color:TEXT_DIM }}>{row.lbl}</span>
+<span style={{ fontFamily:“monospace”, fontSize:12, color:row.color || GOLD }}>
+{row.val} {row.sub && <span style={{ color:TEXT_DIM, fontSize:9 }}>{row.sub}</span>}
+</span>
+</div>
+))}
+<div style={{ marginTop:12 }}>
+<div style={{ height:3, background:“rgba(201,168,76,0.08)”, borderRadius:2, overflow:“hidden” }}>
+<div style={{ height:“100%”, width:`${pct}%`, background:`linear-gradient(90deg,${TEAL},rgba(0,220,200,0.4))`, borderRadius:2, transition:“width 0.5s” }} />
+</div>
+</div>
+</Card>
+</div>
+);
 }
 
-// ── WEIGHT ────────────────────────────────────
-function setUnit(u){S.weightUnit=u;save();document.getElementById('unit-lbs').classList.toggle('active',u==='lbs');document.getElementById('unit-kg').classList.toggle('active',u==='kg');renderWeightLog();}
-function logWeight(){
-  const inp=document.getElementById('weight-input'),v=parseFloat(inp.value);
-  if(isNaN(v)||v<=0){toast('Enter a valid weight');return;}
-  const lbs=S.weightUnit==='kg'?v/0.453592:v;
-  S.weights.push({ts:Date.now(),lbs});S.weights.sort((a,b)=>a.ts-b.ts);
-  save();inp.value='';renderWeightLog();toast('✓ Weight logged');
+// ── VIALS + ADHERENCE PAGE ────────────────────
+function VialsPage({ state, onReset }) {
+const used = state.retaUsed % VIAL_SIZE;
+const left = VIAL_SIZE - used;
+
+const now = new Date();
+const som = new Date(now.getFullYear(), now.getMonth(), 1);
+let pastSched = 0;
+for (let d = 1; d <= now.getDate(); d++) {
+const dt = new Date(now.getFullYear(), now.getMonth(), d);
+if (!isRetaDay(dt.getDay())) continue;
+const doseTs = new Date(now.getFullYear(), now.getMonth(), d, retaHour(dt.getDay()), 0).getTime();
+if (doseTs <= now.getTime()) pastSched++;
 }
-function delWeight(i){S.weights.splice(i,1);save();renderWeightLog();}
-function renderWeightLog(){
-  const W=S.weights;
-  if(W.length){
-    const c=W[W.length-1].lbs,s=W[0].lbs,lo=Math.min(...W.map(w=>w.lbs));
-    const d=c-s,sign=d<0?'↓':d>0?'↑':'',cls=d<0?'neg':d>0?'pos':'';
-    document.getElementById('ws-cur').textContent=fmtW(c);document.getElementById('ws-cur').className='wstat-val neg';
-    document.getElementById('ws-start').textContent=fmtW(s);document.getElementById('ws-start').className='wstat-val';
-    document.getElementById('ws-delta').textContent=`${sign} ${fmtW(Math.abs(d))}`;document.getElementById('ws-delta').className=`wstat-val ${cls}`;
-    document.getElementById('ws-low').textContent=fmtW(lo);document.getElementById('ws-low').className='wstat-val neg';
-  } else {
-    ['ws-cur','ws-start','ws-delta','ws-low'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).className='wstat-val';});
-  }
-  renderWeightChart();
-  const hist=document.getElementById('weight-history');
-  if(!W.length){hist.innerHTML=`<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);padding:10px 0">No entries yet.</div>`;return;}
-  hist.innerHTML=[...W].reverse().map((w,ri)=>{
-    const i=W.length-1-ri,prev=i>0?W[i-1].lbs:null,d=prev!==null?w.lbs-prev:null;
-    let dHtml='';if(d!==null){const c=d<0?'down':d>0?'up':'same',s=d<0?'▼':d>0?'▲':'=';dHtml=`<span class="wdelta ${c}">${s} ${fmtW(Math.abs(d))}</span>`;}
-    return `<div class="wlog-row"><span class="wlog-date">${fmtFull(w.ts)}</span><span class="wlog-val">${fmtW(w.lbs)}</span>${dHtml}<button class="wlog-del" onclick="delWeight(${i})">✕</button></div>`;
-  }).join('');
-}
-function renderWeightChart(){
-  const svg=document.getElementById('weight-svg'),W=S.weights;
-  if(W.length<2){svg.innerHTML=`<text x="50%" y="50%" fill="rgba(201,168,76,0.2)" font-family="Share Tech Mono" font-size="14" text-anchor="middle" dominant-baseline="middle">Log 2+ entries to see trend</text>`;return;}
-  const pts=W.slice(-60),vals=pts.map(w=>S.weightUnit==='kg'?w.lbs*0.453592:w.lbs);
-  const mn=Math.min(...vals),mx=Math.max(...vals),pad=(mx-mn)*0.15||1;
-  const minV=Math.floor(mn-pad),maxV=Math.ceil(mx+pad),rng=maxV-minV;
-  const VW=600,VH=180,PL=52,PR=12,PT=14,PB=28,cw=VW-PL-PR,ch=VH-PT-PB;
-  const xp=i=>PL+(i/(pts.length-1))*cw,yp=v=>PT+(1-(v-minV)/rng)*ch;
-  const coords=vals.map((v,i)=>`${xp(i).toFixed(1)},${yp(v).toFixed(1)}`);
-  const line='M'+coords.join('L'),area=`M${xp(0).toFixed(1)},${(PT+ch).toFixed(1)}L${coords.join('L')}L${xp(pts.length-1).toFixed(1)},${(PT+ch).toFixed(1)}Z`;
-  let gl='',yl='';
-  for(let i=0;i<=4;i++){const v=minV+(rng/4)*i,yy=yp(v).toFixed(1);gl+=`<line x1="${PL}" y1="${yy}" x2="${VW-PR}" y2="${yy}" stroke="rgba(201,168,76,0.06)" stroke-width="1"/>`;yl+=`<text x="${PL-6}" y="${yy}" fill="rgba(201,168,76,0.45)" font-size="10" text-anchor="end" dominant-baseline="middle" font-family="Share Tech Mono">${Math.round(v)}</text>`;}
-  const xi=[0,Math.floor(pts.length/3),Math.floor(pts.length*2/3),pts.length-1];
-  const xl=xi.map(i=>{const d=new Date(pts[i].ts);return `<text x="${xp(i).toFixed(1)}" y="${(PT+ch+18).toFixed(1)}" fill="rgba(201,168,76,0.35)" font-size="10" text-anchor="middle" font-family="Share Tech Mono">${d.getMonth()+1}/${d.getDate()}</text>`;}).join('');
-  const dots=pts.length<=30?vals.map((v,i)=>`<circle cx="${xp(i).toFixed(1)}" cy="${yp(v).toFixed(1)}" r="3" fill="#c9a84c" opacity="0.7"/>`).join(''):'';
-  svg.setAttribute('viewBox',`0 0 ${VW} ${VH}`);
-  svg.innerHTML=`<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c9a84c" stop-opacity="0.2"/><stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/></linearGradient></defs>${gl}<path d="${area}" fill="url(#wg)"/><path d="${line}" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${yl}${xl}`;
+const logged = Math.min(state.logs.filter(l => new Date(l.ts) >= som).length, pastSched);
+const pct = pastSched > 0 ? Math.round(logged / pastSched * 100) : 100;
+const C = 2 * Math.PI * 42, fill = (pct / 100) * C;
+
+return (
+<div>
+<SecLabel>Active Vial</SecLabel>
+<Card>
+<div style={{ display:“flex”, justifyContent:“space-between”, fontSize:12, fontWeight:600, color:TEXT, marginBottom:5 }}>
+Retatrutide <span style={{ fontFamily:“monospace”, fontSize:10, fontWeight:400, color:TEAL }}>{left} units left</span>
+</div>
+<div style={{ display:“flex”, gap:2, flexWrap:“wrap” }}>
+{Array.from({ length: VIAL_SIZE }, (_, i) => (
+<div key={i} style={{
+width:10, height:14, borderRadius:2,
+border:`1px solid ${i < used ? TEAL : "rgba(0,220,200,0.2)"}`,
+background: i < used ? TEAL : “rgba(0,220,200,0.04)”,
+boxShadow: i < used ? “0 0 3px rgba(0,220,200,0.4)” : “none”
+}} />
+))}
+</div>
+<div style={{ fontFamily:“monospace”, fontSize:9, color:TEXT_DIM, marginTop:3 }}>{used}/{VIAL_SIZE} · {DOSE_UNITS} units per dose</div>
+<button onClick={onReset} style={{ background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:4, color:TEXT_DIM, fontFamily:“monospace”, fontSize:9, padding:“3px 8px”, cursor:“pointer”, letterSpacing:1, textTransform:“uppercase”, marginTop:5 }}>
+New Vial
+</button>
+</Card>
+
+```
+  <SecLabel>Adherence</SecLabel>
+  <Card>
+    <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+      <div style={{ position:"relative", display:"inline-block" }}>
+        <svg width="90" height="90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(201,168,76,0.08)" strokeWidth="8"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke={GOLD} strokeWidth="8"
+            strokeDasharray={`${fill} ${C}`} strokeDashoffset={C * 0.25} strokeLinecap="round"/>
+        </svg>
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center" }}>
+          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:GOLD_BRIGHT, lineHeight:1 }}>{pct}%</div>
+          <div style={{ fontSize:8, color:TEXT_DIM, letterSpacing:1, fontFamily:"monospace" }}>this month</div>
+        </div>
+      </div>
+    </div>
+    {[
+      { color:TEAL, name:"Retatrutide", val:`${pct}%` },
+      { color:"rgba(255,255,255,0.1)", name:"All-time doses", val:state.logs.length, valColor:TEXT_DIM }
+    ].map((row, i, arr) => (
+      <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 0", borderBottom: i < arr.length-1 ? "1px solid rgba(201,168,76,0.06)" : "none" }}>
+        <div style={{ width:7, height:7, borderRadius:"50%", background:row.color, flexShrink:0 }} />
+        <span style={{ fontFamily:"monospace", fontSize:11, color:TEXT, flex:1 }}>{row.name}</span>
+        <span style={{ fontFamily:"monospace", fontSize:11, color:row.valColor || GOLD }}>{row.val}</span>
+      </div>
+    ))}
+  </Card>
+</div>
+```
+
+);
 }
 
-// ── PROTOCOL ──────────────────────────────────
-function renderProtocol(){
-  const now=Date.now();
-  const firstDose=S.logs.length?S.logs[0].ts:null;
-  const daysOn=firstDose?Math.floor((now-firstDose)/86400000):0;
-  const weeksOn=Math.floor(daysOn/7);
-  function advice(w){
-    if(w<2)return{cls:'new',msg:'🟢 New — stay at starting dose. Monitor GI tolerance.'};
-    if(w<4)return{cls:'stable',msg:'✓ Stable — monitor tolerance for 2 more weeks.'};
-    if(w<8)return{cls:'soon',msg:'⚡ Consider titration at week 8+ if plateau reached.'};
-    return{cls:'due',msg:'⬆ Titration due — evaluate dose increase if loss has plateaued.'};
-  }
-  const adv=firstDose?advice(weeksOn):{cls:'new',msg:'🟢 No doses logged yet — start your protocol!'};
-  const startStr=firstDose?`${MONTHS[new Date(firstDose).getMonth()]} ${new Date(firstDose).getDate()}, ${new Date(firstDose).getFullYear()}`:'Not started';
-  document.getElementById('protocol-card').innerHTML=`
-    <div class="proto-item">
-      <div class="proto-header"><div class="proto-dot"></div><div><div class="proto-name">Retatrutide</div><div class="proto-started">Started ${startStr}</div></div></div>
-      <div class="proto-stat"><span class="proto-stat-lbl">Days on protocol</span><span class="proto-stat-val">${daysOn}</span></div>
-      <div class="proto-stat"><span class="proto-stat-lbl">Weeks on protocol</span><span class="proto-stat-val">${weeksOn}</span></div>
-      <div class="proto-stat"><span class="proto-stat-lbl">Total doses logged</span><span class="proto-stat-val">${S.logs.length}</span></div>
-      <div class="proto-stat"><span class="proto-stat-lbl">Total mg administered</span><span class="proto-stat-val">${(S.logs.length*DOSE_UNITS/1000).toFixed(2)} mg</span></div>
-      <div class="proto-advice ${adv.cls}">${adv.msg}</div>
-    </div>`;
+// ── WEIGHT PAGE ───────────────────────────────
+function WeightPage({ state, onLog, onDelete, onSetUnit }) {
+const [input, setInput] = useState(””);
+const W = state.weights;
+const curW = W.length ? W[W.length-1].lbs : null;
+const startW = W.length ? W[0].lbs : null;
+const delta = curW !== null && startW !== null ? curW - startW : null;
+const loW = W.length ? Math.min(…W.map(w => w.lbs)) : null;
+
+function doLog() {
+const v = parseFloat(input);
+if (isNaN(v) || v <= 0) return;
+const lbs = state.weightUnit === “kg” ? v / 0.453592 : v;
+onLog(lbs);
+setInput(””);
 }
 
-// ── DOSE ACTIONS ──────────────────────────────
-function logDose(){
-  S.logs.push({ts:Date.now()});S.retaUsed++;
-  save();renderAll();toast('✓ Retatrutide logged');
+// Simple chart
+const pts = W.slice(-60);
+const vals = pts.map(w => state.weightUnit === “kg” ? w.lbs * 0.453592 : w.lbs);
+let chartSvg = null;
+if (pts.length >= 2) {
+const mn = Math.min(…vals), mx = Math.max(…vals), pad = (mx - mn) * 0.15 || 1;
+const minV = Math.floor(mn - pad), maxV = Math.ceil(mx + pad), rng = maxV - minV;
+const VW=600,VH=180,PL=52,PR=12,PT=14,PB=28,cw=VW-PL-PR,ch=VH-PT-PB;
+const xp = i => PL + (i / (pts.length-1)) * cw;
+const yp = v => PT + (1 - (v - minV) / rng) * ch;
+const coords = vals.map((v,i) => `${xp(i).toFixed(1)},${yp(v).toFixed(1)}`);
+const line = “M” + coords.join(“L”);
+const area = `M${xp(0).toFixed(1)},${(PT+ch).toFixed(1)}L${coords.join("L")}L${xp(pts.length-1).toFixed(1)},${(PT+ch).toFixed(1)}Z`;
+const gridLines = [0,1,2,3,4].map(i => { const v=minV+(rng/4)*i,yy=yp(v).toFixed(1); return `<line x1="${PL}" y1="${yy}" x2="${VW-PR}" y2="${yy}" stroke="rgba(201,168,76,0.06)" stroke-width="1"/><text x="${PL-6}" y="${yy}" fill="rgba(201,168,76,0.45)" font-size="10" text-anchor="end" dominant-baseline="middle" font-family="monospace">${Math.round(v)}</text>`; }).join(””);
+const xi = [0,Math.floor(pts.length/3),Math.floor(pts.length*2/3),pts.length-1];
+const xLabels = xi.map(i => { const d=new Date(pts[i].ts); return `<text x="${xp(i).toFixed(1)}" y="${(PT+ch+18).toFixed(1)}" fill="rgba(201,168,76,0.35)" font-size="10" text-anchor="middle" font-family="monospace">${d.getMonth()+1}/${d.getDate()}</text>`; }).join(””);
+const dots = pts.length <= 30 ? vals.map((v,i) => `<circle cx="${xp(i).toFixed(1)}" cy="${yp(v).toFixed(1)}" r="3" fill="${GOLD}" opacity="0.7"/>`).join(””) : “”;
+const svgStr = `<defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${GOLD}" stop-opacity="0.2"/><stop offset="100%" stop-color="${GOLD}" stop-opacity="0"/></linearGradient></defs>${gridLines}<path d="${area}" fill="url(#wg)"/><path d="${line}" fill="none" stroke="${GOLD}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dots}${xLabels}`;
+chartSvg = <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width:“100%”, height:160 }} dangerouslySetInnerHTML={{ __html: svgStr }} />;
 }
-function subtractDose(){
-  if(!S.logs.length){toast('No doses to remove');return;}
-  S.logs.pop();S.retaUsed=Math.max(0,S.retaUsed-1);
-  save();renderAll();toast('↩ Last dose removed');
-}
-function resetVial(){S.retaUsed=0;save();renderVials();toast('New vial started');}
 
-// ── BACKDATE ──────────────────────────────────
-function openBackdate(){
-  const now=new Date();
-  document.getElementById('backdate-dt').value=new Date(now-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
-  document.getElementById('backdate-overlay').classList.add('show');
+return (
+<div>
+<SecLabel>Weight Log</SecLabel>
+<Card>
+<div style={{ fontFamily:“monospace”, fontSize:9, letterSpacing:2, textTransform:“uppercase”, color:TEXT_DIM, marginBottom:8 }}>Log Today’s Weight</div>
+<div style={{ display:“flex”, gap:10, alignItems:“center”, marginBottom:12 }}>
+<input
+type=“number” value={input} onChange={e => setInput(e.target.value)}
+placeholder=“0.0” step=“0.1” min=“50” max=“700”
+onKeyDown={e => e.key === “Enter” && doLog()}
+style={{ background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, color:GOLD_BRIGHT, fontFamily:“monospace”, fontSize:20, padding:“10px 14px”, width:120, outline:“none” }}
+/>
+<div style={{ display:“flex”, background:BG3, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, overflow:“hidden” }}>
+{[“lbs”,“kg”].map(u => (
+<button key={u} onClick={() => onSetUnit(u)} style={{ background: state.weightUnit===u ? GOLD_DIM : “none”, border:“none”, color: state.weightUnit===u ? GOLD : TEXT_DIM, fontFamily:“monospace”, fontSize:11, padding:“8px 14px”, cursor:“pointer” }}>{u}</button>
+))}
+</div>
+</div>
+<button onClick={doLog} style={{ background:”#1a1500”, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, color:GOLD, fontFamily:“monospace”, fontSize:11, padding:“11px 20px”, cursor:“pointer”, letterSpacing:1, textTransform:“uppercase”, width:“100%” }}>
+⊕ Log Weight
+</button>
+
+```
+    {/* Stats */}
+    <div style={{ display:"flex", gap:10, margin:"16px 0", flexWrap:"wrap" }}>
+      {[
+        { val: curW ? fmtW(curW, state.weightUnit) : "—", lbl:"Current", color: TEAL },
+        { val: startW ? fmtW(startW, state.weightUnit) : "—", lbl:"Starting", color: GOLD_BRIGHT },
+        { val: delta !== null ? `${delta<0?"↓":"↑"} ${fmtW(Math.abs(delta), state.weightUnit)}` : "—", lbl:"Total Δ", color: delta !== null ? (delta < 0 ? TEAL : "#fb7185") : GOLD_BRIGHT },
+        { val: loW ? fmtW(loW, state.weightUnit) : "—", lbl:"Lowest", color: TEAL }
+      ].map((ws, i) => (
+        <div key={i} style={{ flex:1, minWidth:60, textAlign:"center" }}>
+          <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:1, color:ws.color }}>{ws.val}</div>
+          <div style={{ fontFamily:"monospace", fontSize:8, letterSpacing:1, textTransform:"uppercase", color:TEXT_DIM, marginTop:2 }}>{ws.lbl}</div>
+        </div>
+      ))}
+    </div>
+
+    {pts.length >= 2 ? chartSvg : (
+      <div style={{ height:80, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"monospace", fontSize:11, color:TEXT_DIM }}>Log 2+ entries to see trend</div>
+    )}
+
+    {/* History */}
+    <div style={{ maxHeight:300, overflowY:"auto", marginTop:8 }}>
+      {!W.length ? (
+        <div style={{ fontFamily:"monospace", fontSize:11, color:TEXT_DIM, padding:"10px 0" }}>No entries yet.</div>
+      ) : [...W].reverse().map((w, ri) => {
+        const i = W.length - 1 - ri;
+        const prev = i > 0 ? W[i-1].lbs : null;
+        const d = prev !== null ? w.lbs - prev : null;
+        return (
+          <div key={ri} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 0", borderBottom:"1px solid rgba(201,168,76,0.06)" }}>
+            <span style={{ fontFamily:"monospace", fontSize:9, color:TEXT_DIM, flex:1 }}>{fmtFull(w.ts)}</span>
+            <span style={{ fontFamily:"monospace", fontSize:12, color:GOLD }}>{fmtW(w.lbs, state.weightUnit)}</span>
+            {d !== null && (
+              <span style={{ fontFamily:"monospace", fontSize:10, padding:"2px 6px", borderRadius:4, color: d<0?TEAL:d>0?"#fb7185":TEXT_DIM, background: d<0?"rgba(0,220,200,0.08)":d>0?"rgba(251,113,133,0.08)":"transparent" }}>
+                {d<0?"▼":d>0?"▲":"="} {fmtW(Math.abs(d), state.weightUnit)}
+              </span>
+            )}
+            <button onClick={() => onDelete(i)} style={{ background:"none", border:"none", color:TEXT_DIM, cursor:"pointer", fontSize:12, padding:"0 4px" }}>✕</button>
+          </div>
+        );
+      })}
+    </div>
+  </Card>
+</div>
+```
+
+);
 }
-function closeBackdate(e){
-  if(e&&e.target!==document.getElementById('backdate-overlay'))return;
-  document.getElementById('backdate-overlay').classList.remove('show');
+
+// ── PROTOCOL PAGE ─────────────────────────────
+function ProtocolPage({ state }) {
+const now = Date.now();
+const firstDose = state.logs.length ? state.logs[0].ts : null;
+const daysOn = firstDose ? Math.floor((now - firstDose) / 86400000) : 0;
+const weeksOn = Math.floor(daysOn / 7);
+
+function advice(w) {
+if (w < 2) return { cls:“new”, color:“rgba(201,168,76,0.15)”, border:“rgba(201,168,76,0.3)”, text:TEXT_DIM, msg:“🟢 New — stay at starting dose. Monitor GI tolerance.” };
+if (w < 4) return { color:“rgba(0,220,200,0.06)”, border:“rgba(0,220,200,0.2)”, text:TEAL, msg:“✓ Stable — monitor tolerance for 2 more weeks.” };
+if (w < 8) return { color:“rgba(251,113,133,0.08)”, border:“rgba(251,113,133,0.25)”, text:”#fb7185”, msg:“⚡ Consider titration at week 8+ if plateau reached.” };
+return { color:“rgba(245,166,35,0.1)”, border:“rgba(245,166,35,0.3)”, text:”#f5a623”, msg:“⬆ Titration due — evaluate dose increase if loss has plateaued.” };
 }
-function confirmBackdate(){
-  const dtVal=document.getElementById('backdate-dt').value;
-  if(!dtVal){toast('Select a date and time');return;}
-  const ts=new Date(dtVal).getTime();
-  if(isNaN(ts)){toast('Invalid date');return;}
-  if(ts>Date.now()){toast('Cannot log a future dose');return;}
-  S.logs.push({ts});S.logs.sort((a,b)=>a.ts-b.ts);S.retaUsed++;
-  save();renderAll();
-  document.getElementById('backdate-overlay').classList.remove('show');
-  const d=new Date(ts);
-  toast(`✓ Reta logged for ${d.getMonth()+1}/${d.getDate()} ${fmt12(d)}`);
+
+const adv = firstDose ? advice(weeksOn) : { color:“rgba(201,168,76,0.04)”, border:“rgba(201,168,76,0.15)”, text:TEXT_DIM, msg:“🟢 No doses logged yet — start your protocol!” };
+const startStr = firstDose ? `${MONTHS[new Date(firstDose).getMonth()]} ${new Date(firstDose).getDate()}, ${new Date(firstDose).getFullYear()}` : “Not started”;
+
+return (
+<div>
+<SecLabel>Protocol Status</SecLabel>
+<Card>
+<div style={{ background:BG3, borderRadius:10, padding:14, border:`1px solid ${GOLD_BORDER}` }}>
+<div style={{ display:“flex”, alignItems:“center”, gap:10, marginBottom:10, paddingBottom:8, borderBottom:“1px solid rgba(201,168,76,0.08)” }}>
+<div style={{ width:10, height:10, borderRadius:“50%”, background:TEAL, flexShrink:0 }} />
+<div>
+<div style={{ fontFamily:“sans-serif”, fontSize:12, fontWeight:600, color:TEXT }}>Retatrutide</div>
+<div style={{ fontFamily:“monospace”, fontSize:8, color:TEXT_DIM, marginTop:1 }}>Started {startStr}</div>
+</div>
+</div>
+{[
+{ lbl:“Days on protocol”, val:daysOn },
+{ lbl:“Weeks on protocol”, val:weeksOn },
+{ lbl:“Total doses logged”, val:state.logs.length },
+{ lbl:“Total mg administered”, val:`${(state.logs.length * DOSE_UNITS / 1000).toFixed(2)} mg` }
+].map((row, i, arr) => (
+<div key={i} style={{ display:“flex”, justifyContent:“space-between”, alignItems:“baseline”, padding:“3px 0”, borderBottom: i < arr.length-1 ? “1px solid rgba(201,168,76,0.04)” : “none” }}>
+<span style={{ fontFamily:“monospace”, fontSize:9, color:TEXT_DIM }}>{row.lbl}</span>
+<span style={{ fontFamily:“monospace”, fontSize:11, color:GOLD }}>{row.val}</span>
+</div>
+))}
+<div style={{ marginTop:8, padding:“7px 9px”, borderRadius:6, fontFamily:“monospace”, fontSize:9, lineHeight:1.5, background:adv.color, border:`1px solid ${adv.border}`, color:adv.text }}>
+{adv.msg}
+</div>
+</div>
+</Card>
+
+```
+  <SecLabel>Titration Guide</SecLabel>
+  <Card>
+    {[
+      { lbl:"Week 1–2", val:"Starting dose · monitor tolerance", color:TEAL },
+      { lbl:"Week 2–4", val:"Assess response · stay at dose", color:TEAL },
+      { lbl:"Week 4–8", val:"Titrate up if plateau reached", color:"#f5a623" },
+      { lbl:"Week 8+", val:"Evaluate next dose increase", color:"#fb7185" },
+      { lbl:"Off-cycle", val:"Goal-dependent", color:GOLD }
+    ].map((row, i, arr) => (
+      <div key={i} style={{ ...s.statRow, borderBottom: i < arr.length-1 ? "1px solid rgba(201,168,76,0.06)" : "none" }}>
+        <span style={{ fontFamily:"monospace", fontSize:11, color:TEXT_DIM }}>{row.lbl}</span>
+        <span style={{ fontFamily:"monospace", fontSize:12, color:row.color }}>{row.val}</span>
+      </div>
+    ))}
+  </Card>
+
+  <SecLabel>Peptide Reference</SecLabel>
+  <div style={{ background:BG2, border:`1px solid ${GOLD_BORDER}`, borderRadius:14, padding:20, position:"relative", overflow:"hidden" }}>
+    <div style={{ position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD_DIM},transparent)` }} />
+    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+      <div style={{ width:38, height:38, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, background:"rgba(0,220,200,0.08)", border:"1px solid rgba(0,220,200,0.2)", flexShrink:0 }}>🔬</div>
+      <div>
+        <div style={{ fontFamily:"sans-serif", fontSize:15, fontWeight:600, color:TEXT }}>Retatrutide</div>
+        <div style={{ fontFamily:"monospace", fontSize:8, letterSpacing:"1.5px", textTransform:"uppercase", color:TEXT_DIM, marginTop:2 }}>GIP / GLP-1 / GLUCAGON AGONIST</div>
+      </div>
+    </div>
+    <div style={{ fontFamily:"monospace", fontSize:9, letterSpacing:2, textTransform:"uppercase", marginBottom:8, color:TEAL }}>Benefits</div>
+    <ul style={{ listStyle:"none", padding:0, marginBottom:12 }}>
+      {["Significant body weight reduction via triple receptor action","Improved insulin sensitivity and glycemic control","Reduction in visceral and hepatic fat","Potential cardiovascular risk reduction","Appetite suppression and improved satiety","Possible muscle preservation during fat loss"].map((item, i) => (
+        <li key={i} style={{ fontSize:11, color:TEXT_DIM, padding:"3px 0 3px 12px", position:"relative", lineHeight:1.5 }}>
+          <span style={{ position:"absolute", left:0, color:TEAL, fontSize:8, top:5 }}>▸</span>
+          {item}
+        </li>
+      ))}
+    </ul>
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+      {[
+        { title:"PROS", color:TEAL, items:["Most potent weight-loss peptide class","Twice-weekly schedule","Multi-pathway metabolic action"] },
+        { title:"CONS", color:"#fb7185", items:["GI side effects possible","Still in clinical development","Careful titration required"] }
+      ].map((col, ci) => (
+        <div key={ci}>
+          <div style={{ fontFamily:"monospace", fontSize:8, letterSpacing:2, textTransform:"uppercase", marginBottom:6, color:col.color }}>{col.title}</div>
+          <ul style={{ listStyle:"none", padding:0 }}>
+            {col.items.map((item, i) => (
+              <li key={i} style={{ fontSize:11, color:TEXT_DIM, padding:"3px 0 3px 12px", position:"relative", lineHeight:1.5 }}>
+                <span style={{ position:"absolute", left:0, color:col.color, fontSize:8, top:5 }}>▸</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+```
+
+);
+}
+
+// ── BACKDATE MODAL ────────────────────────────
+function BackdateModal({ open, onClose, onConfirm }) {
+const [dt, setDt] = useState(””);
+useEffect(() => {
+if (open) {
+const now = new Date();
+setDt(new Date(now - now.getTimezoneOffset()*60000).toISOString().slice(0,16));
+}
+}, [open]);
+
+function confirm() {
+const ts = new Date(dt).getTime();
+if (!dt || isNaN(ts)) return;
+if (ts > Date.now()) return;
+onConfirm(ts);
+}
+
+if (!open) return null;
+return (
+<div onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+style={{ position:“fixed”, inset:0, background:“rgba(0,0,0,0.85)”, zIndex:200, display:“flex”, alignItems:“flex-end”, justifyContent:“center” }}>
+<div style={{ background:”#111”, border:`1px solid ${GOLD_BORDER}`, borderRadius:“20px 20px 0 0”, padding:“24px 20px 36px”, width:“100%”, maxWidth:500, position:“relative” }}>
+<div style={{ position:“absolute”,top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD_DIM},transparent)`,borderRadius:“20px 20px 0 0” }} />
+<div style={{ width:40, height:4, background:GOLD_BORDER, borderRadius:2, margin:“0 auto 20px” }} />
+<div style={{ fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:20, letterSpacing:2, color:GOLD_BRIGHT, marginBottom:4 }}>LOG MISSED DOSE</div>
+<div style={{ fontFamily:“monospace”, fontSize:10, color:TEXT_DIM, letterSpacing:1, marginBottom:18 }}>Enter the date & time you actually dosed</div>
+<div style={{ fontFamily:“monospace”, fontSize:9, letterSpacing:2, textTransform:“uppercase”, color:TEXT_DIM, marginBottom:8 }}>Date & Time Taken</div>
+<input type=“datetime-local” value={dt} onChange={e => setDt(e.target.value)}
+style={{ background:”#0f0f0f”, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, color:GOLD, fontFamily:“monospace”, fontSize:14, padding:“12px 14px”, width:“100%”, outline:“none”, marginBottom:16, colorScheme:“dark” }} />
+<button onClick={confirm} style={{ width:“100%”, background:”#1a1500”, border:`1px solid ${GOLD}`, borderRadius:10, color:GOLD_BRIGHT, fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:18, letterSpacing:2, padding:14, cursor:“pointer” }}>
+LOG DOSE
+</button>
+<button onClick={onClose} style={{ width:“100%”, background:“none”, border:“none”, color:TEXT_DIM, fontFamily:“monospace”, fontSize:11, padding:10, cursor:“pointer”, marginTop:4, letterSpacing:1 }}>
+Cancel
+</button>
+</div>
+</div>
+);
 }
 
 // ── TOAST ─────────────────────────────────────
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'),2500);
+function Toast({ msg }) {
+if (!msg) return null;
+return (
+<div style={{ position:“fixed”, bottom:80, left:“50%”, transform:“translateX(-50%)”, background:”#111”, border:`1px solid ${GOLD_BORDER}`, borderRadius:8, padding:“10px 22px”, fontFamily:“monospace”, fontSize:12, color:GOLD, letterSpacing:1, zIndex:100, whiteSpace:“nowrap”, pointerEvents:“none” }}>
+{msg}
+</div>
+);
 }
 
 // ── CLOCK ─────────────────────────────────────
-function updateClock(){const n=new Date();document.getElementById('live-clock').textContent=fmt12(n);document.getElementById('live-date').textContent=fmtDay(n);}
+function useClock() {
+const [time, setTime] = useState(new Date());
+useEffect(() => { const t = setInterval(() => setTime(new Date()), 10000); return () => clearInterval(t); }, []);
+return time;
+}
 
-// ── RENDER ALL ────────────────────────────────
-function renderAll(){renderHome();renderCalendar();renderDoseLog();renderMonthlyStats();renderVials();renderAdherence();renderWeightLog();renderProtocol();}
+// ── ROOT APP ──────────────────────────────────
+export default function App() {
+const [page, setPage] = useState(0);
+const [state, setState] = useState(loadState);
+const [toast, setToast] = useState(””);
+const [backdateOpen, setBackdateOpen] = useState(false);
+const clock = useClock();
 
-// ── INIT ──────────────────────────────────────
-document.getElementById('unit-lbs').classList.toggle('active',S.weightUnit!=='kg');
-document.getElementById('unit-kg').classList.toggle('active',S.weightUnit==='kg');
-updateClock();renderAll();
-setInterval(updateClock,10000);
-setInterval(renderCalendar,60000);
-</script>
+function update(fn) {
+setState(prev => {
+const next = fn({ …prev, logs:[…prev.logs], weights:[…prev.weights] });
+saveState(next);
+return next;
+});
+}
 
-</body>
-</html>
+function showToast(msg) {
+setToast(msg);
+setTimeout(() => setToast(””), 2500);
+}
+
+function logDose() {
+update(s => { s.logs.push({ ts: Date.now() }); s.retaUsed++; return s; });
+showToast(“✓ Retatrutide logged”);
+}
+function subtractDose() {
+if (!state.logs.length) { showToast(“No doses to remove”); return; }
+update(s => { s.logs.pop(); s.retaUsed = Math.max(0, s.retaUsed - 1); return s; });
+showToast(“↩ Last dose removed”);
+}
+function delLog(i) {
+update(s => { s.logs.splice(i, 1); s.retaUsed = Math.max(0, s.retaUsed - 1); return s; });
+showToast(“Entry removed”);
+}
+function backdateDose(ts) {
+update(s => { s.logs.push({ ts }); s.logs.sort((a,b)=>a.ts-b.ts); s.retaUsed++; return s; });
+setBackdateOpen(false);
+const d = new Date(ts);
+showToast(`✓ Reta logged for ${d.getMonth()+1}/${d.getDate()} ${fmt12(d)}`);
+}
+function logWeight(lbs) {
+update(s => { s.weights.push({ ts: Date.now(), lbs }); s.weights.sort((a,b)=>a.ts-b.ts); return s; });
+showToast(“✓ Weight logged”);
+}
+function delWeight(i) {
+update(s => { s.weights.splice(i, 1); return s; });
+}
+function setUnit(u) {
+update(s => { s.weightUnit = u; return s; });
+}
+function resetVial() {
+update(s => { s.retaUsed = 0; return s; });
+showToast(“New vial started”);
+}
+
+const pages = [
+<HomePage state={state} />,
+<CalendarPage state={state} onLog={logDose} onSubtract={subtractDose} onBackdate={() => setBackdateOpen(true)} />,
+<LogPage state={state} onDelete={delLog} />,
+<StatsPage state={state} />,
+<VialsPage state={state} onReset={resetVial} />,
+<WeightPage state={state} onLog={logWeight} onDelete={delWeight} onSetUnit={setUnit} />,
+<ProtocolPage state={state} />
+];
+
+const navItems = [
+{ icon:“⌂”, label:“Home” },
+{ icon:“📅”, label:“Schedule” },
+{ icon:“📋”, label:“Log” },
+{ icon:“📊”, label:“Stats” },
+{ icon:“💉”, label:“Vials” },
+{ icon:“⚖️”, label:“Weight” },
+{ icon:“🗓”, label:“Protocol” }
+];
+
+return (
+<div style={{ position:“fixed”, inset:0, display:“flex”, flexDirection:“column”, background:BG, color:TEXT, fontFamily:“sans-serif”, overflow:“hidden” }}>
+{/* TOP BAR */}
+<div style={{ padding:“12px 20px”, background:BG, borderBottom:`1px solid ${GOLD_BORDER}`, display:“flex”, alignItems:“center”, justifyContent:“space-between”, flexShrink:0, position:“relative” }}>
+<div style={{ position:“absolute”,bottom:-1,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD},transparent)` }} />
+<div style={{ display:“flex”, alignItems:“center”, gap:10 }}>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stopColor="#e8c96a"/><stop offset="100%" stopColor="#c9a84c"/>
+</linearGradient>
+</defs>
+<path d="M10 2 C6 6 6 10 10 14 C14 18 14 22 10 26 C8 28 8 30 10 30" stroke="url(#g)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+<path d="M22 2 C26 6 26 10 22 14 C18 18 18 22 22 26 C24 28 24 30 22 30" stroke="url(#g)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+<line x1="10" y1="6" x2="22" y2="6" stroke="#e8c96a" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+<line x1="9" y1="10" x2="23" y2="10" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
+<line x1="10" y1="14" x2="22" y2="14" stroke="#e8c96a" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+<line x1="13" y1="18" x2="19" y2="18" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+<line x1="10" y1="22" x2="22" y2="22" stroke="#e8c96a" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
+<circle cx="10" cy="14" r="2" fill="#e8c96a" opacity="0.9"/>
+<circle cx="22" cy="14" r="2" fill="#e8c96a" opacity="0.9"/>
+</svg>
+<div style={{ fontFamily:”‘Bebas Neue’,sans-serif”, fontSize:22, letterSpacing:3, color:GOLD_BRIGHT }}>PROTOCOL</div>
+</div>
+<div style={{ textAlign:“right” }}>
+<div style={{ fontFamily:“monospace”, fontSize:14, color:GOLD, letterSpacing:1 }}>{fmt12(clock)}</div>
+<div style={{ fontFamily:“monospace”, fontSize:10, color:TEXT_DIM, letterSpacing:1, marginTop:1 }}>{fmtDay(clock)}</div>
+</div>
+</div>
+
+```
+  {/* PAGE CONTENT */}
+  <div style={{ flex:1, overflowY:"auto", WebkitOverflowScrolling:"touch", padding:"20px 16px 100px" }}>
+    {pages[page]}
+  </div>
+
+  {/* BOTTOM NAV */}
+  <div style={{ position:"relative", flexShrink:0, height:60, background:BG2, borderTop:`1px solid ${GOLD_BORDER}`, display:"flex", alignItems:"stretch" }}>
+    <div style={{ position:"absolute",top:-1,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${GOLD},transparent)` }} />
+    {navItems.map((nav, i) => (
+      <button key={i} onClick={() => setPage(i)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:3, background:"none", border:"none", cursor:"pointer", padding:"8px 2px", position:"relative" }}>
+        {page === i && <div style={{ position:"absolute", top:0, left:"10%", right:"10%", height:2, background:GOLD, borderRadius:"0 0 2px 2px" }} />}
+        <span style={{ fontSize:18, filter: page===i ? "none" : "grayscale(1) brightness(0.4)" }}>{nav.icon}</span>
+        <span style={{ fontFamily:"monospace", fontSize:7, letterSpacing:"0.5px", textTransform:"uppercase", color: page===i ? GOLD : TEXT_DIM }}>{nav.label}</span>
+      </button>
+    ))}
+  </div>
+
+  <BackdateModal open={backdateOpen} onClose={() => setBackdateOpen(false)} onConfirm={backdateDose} />
+  <Toast msg={toast} />
+</div>
+```
+
+);
+}
